@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agenda</title>
-    <link rel="stylesheet" href="../styles/stylesAdmin.css" />    
+    <title>Agenda Mensual</title>
+    <link rel="stylesheet" href="../styles/stylesAgendaMes.css" />
     <script>
         (function() {
             // Verificar autenticación antes de cargar la página
@@ -78,9 +78,9 @@
                         <span class="menu-item-icon">🛒</span>
                         Tienda
                     </a>
-                    <a href="#" class="menu-item" onclick="verMes()">
-                        <span class="menu-item-icon">📅</span>
-                        Mes
+                    <a href="#" class="menu-item" onclick="volverSemanal()">
+                        <span class="menu-item-icon">📋</span>
+                        Semanal
                     </a>
                     <a href="#" class="menu-item logout" onclick="cerrarSesion()">
                         <span class="menu-item-icon">🚪</span>
@@ -89,11 +89,11 @@
                 </div>
             </div>
             
-            <h1>Agenda Semanal</h1>
-            <div class="week-navigation">
-                <button class="nav-btn" id="prevWeek" onclick="agenda.cambiarSemana(-1)">‹</button>
-                <div class="week-indicator" id="weekIndicator">Semana Actual</div>
-                <button class="nav-btn" id="nextWeek" onclick="agenda.cambiarSemana(1)">›</button>
+            <h1>Agenda Mensual</h1>
+            <div class="month-navigation">
+                <button class="nav-btn" id="prevMonth" onclick="agendaMes.cambiarMes(-1)">‹</button>
+                <div class="month-indicator" id="monthIndicator">Enero 2025</div>
+                <button class="nav-btn" id="nextMonth" onclick="agendaMes.cambiarMes(1)">›</button>
             </div>
         </div>
         
@@ -102,10 +102,20 @@
         </div>
         
         <div class="calendar-container">
+            <div class="calendar-header">
+                <div class="day-name">Lunes</div>
+                <div class="day-name">Martes</div>
+                <div class="day-name">Miércoles</div>
+                <div class="day-name">Jueves</div>
+                <div class="day-name">Viernes</div>
+                <div class="day-name">Sábado</div>
+                <div class="day-name">Domingo</div>
+            </div>
             <div class="calendar-grid" id="calendarGrid"></div>
         </div>
     </div>
 
+    <!-- Modal para agregar eventos (mismo que en Administrador.html) -->
     <div class="modal" id="eventModal">
         <div class="modal-content">
             <h2 id="modalTitle">Agregar Evento</h2>
@@ -166,6 +176,7 @@
             </form>
         </div>
     </div>
-    <script src="../controllers/admin.js"></script>
+    
+    <script src="../controllers/agendaMes.js"></script>
 </body>
 </html>

@@ -5,6 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Niño</title>
     <link rel="stylesheet" href="../styles/stylesEditarN.css" />
+    <script>
+        (function() {
+            // Verificar autenticación antes de cargar la página
+            function checkAuth() {
+                const isAuthenticated = localStorage.getItem('isAuthenticated');
+                const loginTimestamp = localStorage.getItem('loginTimestamp');
+                
+                // Verificar si está autenticado
+                if (!isAuthenticated || isAuthenticated !== 'true') {
+                    redirectToLogin();
+                    return;
+                }
+                
+                // Verificar si la sesión ha expirado (opcional - 8 horas)
+                if (loginTimestamp) {
+                    const currentTime = Date.now();
+                    const loginTime = parseInt(loginTimestamp);
+                    const eightHours = 8 * 60 * 60 * 1000; // 8 horas en millisegundos
+                    
+                    if (currentTime - loginTime > eightHours) {
+                        // Sesión expirada
+                        localStorage.removeItem('isAuthenticated');
+                        localStorage.removeItem('loginTimestamp');
+                        alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+                        redirectToLogin();
+                        return;
+                    }
+                }
+            }
+            
+            function redirectToLogin() {
+                // Evitar bucles infinitos
+                if (window.location.pathname.includes('index.html') || 
+                    window.location.pathname === '/' || 
+                    window.location.pathname.endsWith('/')) {
+                    return;
+                }
+                
+                // Redirigir al login
+                window.location.replace('../index.html');
+            }
+            
+            // Ejecutar verificación inmediatamente
+            checkAuth();
+            
+            // También verificar cuando la página se enfoca (usuario regresa a la pestaña)
+            window.addEventListener('focus', checkAuth);
+            
+            // Verificar periódicamente cada 5 minutos
+            setInterval(checkAuth, 5 * 60 * 1000);
+        })();
+    </script>
 </head>
 <body>
     <div class="container">

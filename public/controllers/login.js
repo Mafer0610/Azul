@@ -1,3 +1,22 @@
+// Función que se ejecuta cuando el login es exitoso
+function onLoginSuccess(userType, token, username) {
+    // Guardar datos de autenticación
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('loginTimestamp', Date.now().toString());
+    localStorage.setItem('userType', userType); // 'admin' o 'user'
+    localStorage.setItem('authToken', token);
+    localStorage.setItem('username', username);
+
+    // Redirigir según el tipo de usuario
+    if (userType === 'admin') {
+        window.location.href = '../pages/Administrador.html';
+    } else if (userType === 'user') {
+        window.location.href = '../pages/Usuario.html';
+    } else {
+        alert("Rol no reconocido, contacta al soporte.");
+    }
+}
+
 document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -14,19 +33,8 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
         const data = await response.json();
 
         if (data.success) {
-            // Guardar token y rol en localStorage
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('userRole', data.role);
-            localStorage.setItem('username', data.username);
-            
-            // Redirigir según el rol
-            if (data.role === "admin") {
-                window.location.href = "../pages/Administrador.html";
-            } else if (data.role === "user") {
-                window.location.href = "../pages/Usuario.html";
-            } else {
-                alert("Rol no reconocido, contacta al soporte.");
-            }
+            // Llamar a la función para manejar el éxito
+            onLoginSuccess(data.role, data.token, data.username);
         } else {
             alert(data.error || "Credenciales incorrectas, intenta nuevamente.");
         }

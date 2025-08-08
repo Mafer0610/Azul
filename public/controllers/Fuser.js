@@ -175,8 +175,17 @@ function toggleMenu() {
 
 function cerrarSesion() {
     if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+        // Limpiar datos de autenticación
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('loginTimestamp');
+        
+        // Redirigir al login
         window.location.href = '../index.html';
     } else {
-        document.getElementById('menuDropdown').classList.remove('active');
+        // Cerrar el menú si cancela
+        const dropdown = document.getElementById('menuDropdown');
+        if (dropdown) {
+            dropdown.classList.remove('active');
+        }
     }
 }

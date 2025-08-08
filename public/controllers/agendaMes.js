@@ -1,14 +1,16 @@
-class AgendaSemanalmMongoDB {
+class AgendaMensualMongoDB {
     constructor() {
         this.eventos = {};
-        this.diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-        this.meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        this.meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        this.diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
         this.eventoEditando = null;
         this.fechaSeleccionada = null;
         this.nombreDiaSeleccionado = null;
-        this.semanaActual = 0;
+        this.mesActual = new Date().getMonth();
+        this.añoActual = new Date().getFullYear();
         this.API_BASE_URL = window.location.origin + '/api';
-        this.USER_ID = 'user_' + Date.now(); 
+        this.USER_ID = 'user_' + Date.now();
         
         this.inicializar();
     }
@@ -40,21 +42,6 @@ class AgendaSemanalmMongoDB {
         }
     }
 
-    obtenerFechasSemana(offsetSemanas = 0) {
-        const hoy = new Date();
-        const inicioSemana = new Date(hoy);
-        inicioSemana.setDate(hoy.getDate() - hoy.getDay() + 1 + (offsetSemanas * 7));
-        
-        const fechas = [];
-        // CAMBIADO: Solo 6 días (Lunes a Sábado)
-        for (let i = 0; i < 6; i++) {
-            const fecha = new Date(inicioSemana);
-            fecha.setDate(inicioSemana.getDate() + i);
-            fechas.push(fecha);
-        }
-        return fechas;
-    }
-
     obtenerClaveEvento(fecha) {
         return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}-${String(fecha.getDate()).padStart(2, '0')}`;
     }
@@ -66,9 +53,11 @@ class AgendaSemanalmMongoDB {
 
     async cargarEventos() {
         try {
-            const fechasSemana = this.obtenerFechasSemana(this.semanaActual);
-            const fechaInicio = this.obtenerClaveEvento(fechasSemana[0]);
-            const fechaFin = this.obtenerClaveEvento(fechasSemana[5]); // CAMBIADO: índice 5 en lugar de 6
+            const primerDia = new Date(this.añoActual, this.mesActual, 1);
+            const ultimoDia = new Date(this.añoActual, this.mesActual + 1, 0);
+            
+            const fechaInicio = this.obtenerClaveEvento(primerDia);
+            const fechaFin = this.obtenerClaveEvento(ultimoDia);
 
             const response = await fetch(`${this.API_BASE_URL}/eventos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
             
@@ -89,8 +78,6 @@ class AgendaSemanalmMongoDB {
             const response = await fetch(`${this.API_BASE_URL}/peques`);
             this.infantes = response.ok ? await response.json() : [];
 
-            console.log('Infantes cargados:', this.infantes);
-
             const datalist = document.getElementById('sugerenciasNino');
             datalist.innerHTML = '';
             this.infantes.forEach(nino => {
@@ -98,10 +85,9 @@ class AgendaSemanalmMongoDB {
                 option.value = nino.nombreCompleto;
                 datalist.appendChild(option);
             });
-            document.getElementById('nombreNino').addEventListener('input', (e) => {
-                const nombre = e.target.value.trim();
-                const nombreInput = e.target.value.trim().toLowerCase();
 
+            document.getElementById('nombreNino').addEventListener('input', (e) => {
+                const nombreInput = e.target.value.trim().toLowerCase();
                 const encontrado = this.infantes.find(n =>
                     n.nombreCompleto &&
                     n.nombreCompleto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') ===
@@ -109,25 +95,16 @@ class AgendaSemanalmMongoDB {
                 );
 
                 if (encontrado) {
-                    // CORRECCIÓN: Usar las propiedades correctas del modelo
                     document.getElementById('caracteristicasNino').value = encontrado.caracteristicas || '';
-                    document.getElementById('nombreTutor').value = encontrado.nombreTutor || ''; // Era 'tutor'
-                    document.getElementById('celularTutor').value = encontrado.celularTutor || ''; // Era 'celular'
-                    console.log('Infante encontrado:', encontrado);
+                    document.getElementById('nombreTutor').value = encontrado.nombreTutor || '';
+                    document.getElementById('celularTutor').value = encontrado.celularTutor || '';
                 } else {
-                    // Limpiar campos si no se encuentra el niño
                     document.getElementById('caracteristicasNino').value = '';
                     document.getElementById('nombreTutor').value = '';
                     document.getElementById('celularTutor').value = '';
-                    console.warn('Infante no encontrado:', nombre);
                 }
             });
 
-            // OPCIONAL: También puedes agregar un evento 'change' para cuando seleccionan de la lista
-            document.getElementById('nombreNino').addEventListener('change', (e) => {
-                // Disparar el mismo evento que 'input' para consistencia
-                e.target.dispatchEvent(new Event('input'));
-            });
         } catch (error) {
             console.error('Error cargando infantes:', error);
         }
@@ -138,15 +115,12 @@ class AgendaSemanalmMongoDB {
             const response = await fetch(`${this.API_BASE_URL}/maestros`);
             this.maestros = response.ok ? await response.json() : [];
 
-            console.log('Maestros cargados:', this.maestros);
-
             const selector = document.getElementById('maestro');
             selector.innerHTML = '<option value="">-- Seleccionar --</option>';
             this.maestros.forEach(m => {
                 const option = document.createElement('option');
-                // CORRECCIÓN: Usar 'nombreCompleto' en lugar de 'nombre'
-                option.value = m.nombreCompleto;  // Era m.nombre
-                option.textContent = m.nombreCompleto;  // Era m.nombre
+                option.value = m.nombreCompleto;
+                option.textContent = m.nombreCompleto;
                 selector.appendChild(option);
             });
         } catch (error) {
@@ -156,76 +130,77 @@ class AgendaSemanalmMongoDB {
 
     renderizarCalendario() {
         const grid = document.getElementById('calendarGrid');
-        const fechasSemana = this.obtenerFechasSemana(this.semanaActual);
+        const primerDia = new Date(this.añoActual, this.mesActual, 1);
+        const ultimoDia = new Date(this.añoActual, this.mesActual + 1, 0);
+        
+        // Calcular el primer día a mostrar (puede ser del mes anterior)
+        const inicioCalendario = new Date(primerDia);
+        const diaSemana = primerDia.getDay();
+        const diasAtras = diaSemana === 0 ? 6 : diaSemana - 1; // Lunes = 0
+        inicioCalendario.setDate(primerDia.getDate() - diasAtras);
+        
         let html = '';
-
-        fechasSemana.forEach((fecha, index) => {
-            const claveEvento = this.obtenerClaveEvento(fecha);
+        let fechaActual = new Date(inicioCalendario);
+        
+        // Generar 6 semanas (42 días)
+        for (let i = 0; i < 42; i++) {
+            const claveEvento = this.obtenerClaveEvento(fechaActual);
             const eventosDelDia = this.eventos[claveEvento] || [];
-            const esHoy = this.esHoy(fecha);
+            const esHoy = this.esHoy(fechaActual);
+            const esMesActual = fechaActual.getMonth() === this.mesActual;
+            
+            const clasesDia = [
+                'calendar-day',
+                esHoy ? 'today' : '',
+                !esMesActual ? 'other-month' : ''
+            ].filter(Boolean).join(' ');
             
             html += `
-                <div class="day-column ${esHoy ? 'today-indicator' : ''}">
-                    <div class="day-header">
-                        <div class="day-name">${this.diasSemana[index]}</div>
-                        <div class="day-date">${fecha.getDate()} ${this.meses[fecha.getMonth()].substring(0, 3)}</div>
-                        <button class="add-btn" onclick="agenda.abrirModal('${claveEvento}', '${this.diasSemana[index]} ${fecha.getDate()}/${fecha.getMonth() + 1}')">+</button>
-                    </div>
-                    <div class="events-container">
-                        ${this.renderizarEventos(eventosDelDia, claveEvento)}
+                <div class="${clasesDia}" onclick="agendaMes.abrirModal('${claveEvento}', '${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}')">
+                    <div class="day-number">${fechaActual.getDate()}</div>
+                    <button class="add-day-btn" onclick="event.stopPropagation(); agendaMes.abrirModal('${claveEvento}', '${fechaActual.getDate()}/${fechaActual.getMonth() + 1}/${fechaActual.getFullYear()}')">+</button>
+                    <div class="day-events">
+                        ${this.renderizarEventosMini(eventosDelDia)}
                     </div>
                 </div>
             `;
-        });
+            
+            fechaActual.setDate(fechaActual.getDate() + 1);
+        }
 
         grid.innerHTML = html;
     }
-    
-    renderizarEventos(eventos, claveEvento) {
-        if (eventos.length === 0) {
-            return '<div class="empty-state">No hay eventos</div>';
-        }
+
+    renderizarEventosMini(eventos) {
+        if (eventos.length === 0) return '';
 
         eventos.sort((a, b) => a.time.localeCompare(b.time));
 
-        return eventos.map((evento) => {
-            // Extraer la clase del título del evento
+        return eventos.map(evento => {
             let clase = '';
             if (evento.title && evento.title.includes(' - ')) {
-                clase = evento.title.split(' - ')[1]; // Obtiene la parte después del " - "
-            } else if (evento.clase) {
-                clase = evento.clase; // Si tienes el campo clase directamente
+                clase = evento.title.split(' - ')[1];
             }
             
-            // Obtener el color según la clase (solo para el borde)
-            const colorBorde = this.getColorPorClase(clase);
+            const claseCSS = clase.replace(/\s+/g, '-');
+            const horaFormateada = this.formatearHoraMini(evento.time);
             
             return `
-                <div class="event-item" style="border-left-color: ${colorBorde};">
-                    <div class="event-actions">
-                        <button class="edit-btn" onclick="agenda.editarEvento('${evento._id}', '${claveEvento}')" title="Editar">✏️</button>
-                        <button class="delete-btn" onclick="agenda.eliminarEvento('${evento._id}')" title="Eliminar">🗑️</button>
-                    </div>
-                    <div class="event-time">${this.formatearHora(evento.time)}</div>
-                    <div class="event-title">${evento.title}</div>
-                    ${evento.description ? `<div class="event-description">${evento.description}</div>` : ''}
+                <div class="mini-event clase-${claseCSS}" 
+                     onclick="event.stopPropagation(); agendaMes.verDetalleEvento('${evento._id}')" 
+                     title="${evento.title} - ${horaFormateada}${evento.description ? '\n' + evento.description : ''}">
+                    ${horaFormateada} ${evento.title}
                 </div>
             `;
         }).join('');
     }
 
-    // Tu función getColorPorClase se mantiene igual:
-    getColorPorClase(clase) {
-        const colores = {
-            'CEMS': '#C4C7F2',
-            'AI': '#05F2DB',
-            'OCUPACIONAL': '#F2E205',
-            'BABY SPA': '#F4CCCC',
-            'CANCELAR': '#FF0000',
-            'MUESTRA': '#C6E0B4',
-            'REPOSICIÓN': '#FF00FF'
-        };
-        return colores[clase] || '#F24B99'; // Color por defecto si no encuentra la clase
+    formatearHoraMini(hora) {
+        const [horas, minutos] = hora.split(':');
+        const horaNum = parseInt(horas);
+        const periodo = horaNum >= 12 ? 'PM' : 'AM';
+        const hora12 = horaNum > 12 ? horaNum - 12 : (horaNum === 0 ? 12 : horaNum);
+        return `${hora12}:${minutos}${periodo}`;
     }
 
     formatearHora(hora) {
@@ -236,26 +211,25 @@ class AgendaSemanalmMongoDB {
         return `${hora12}:${minutos} ${periodo}`;
     }
 
-    async cambiarSemana(direccion) {
-        const nuevaSemana = this.semanaActual + direccion;
-        if (nuevaSemana >= 0 && nuevaSemana <= 2) {
-            this.semanaActual = nuevaSemana;
-            await this.cargarEventos();
-            this.renderizarCalendario();
-            this.actualizarNavegacion();
+    async cambiarMes(direccion) {
+        this.mesActual += direccion;
+        
+        if (this.mesActual > 11) {
+            this.mesActual = 0;
+            this.añoActual++;
+        } else if (this.mesActual < 0) {
+            this.mesActual = 11;
+            this.añoActual--;
         }
+        
+        await this.cargarEventos();
+        this.renderizarCalendario();
+        this.actualizarNavegacion();
     }
 
     actualizarNavegacion() {
-        const indicador = document.getElementById('weekIndicator');
-        const prevBtn = document.getElementById('prevWeek');
-        const nextBtn = document.getElementById('nextWeek');
-        
-        const nombres = ['Semana Actual', 'Próxima Semana', 'Semana +2'];
-        indicador.textContent = nombres[this.semanaActual];
-        
-        prevBtn.disabled = this.semanaActual === 0;
-        nextBtn.disabled = this.semanaActual === 2;
+        const indicador = document.getElementById('monthIndicator');
+        indicador.textContent = `${this.meses[this.mesActual]} ${this.añoActual}`;
     }
 
     abrirModal(claveEvento, nombreDia) {
@@ -267,6 +241,25 @@ class AgendaSemanalmMongoDB {
         document.getElementById('eventForm').reset();
         document.getElementById('errorMessage').style.display = 'none';
         document.getElementById('eventModal').style.display = 'block';
+    }
+
+    async verDetalleEvento(eventoId) {
+        // Buscar el evento en todos los días
+        let eventoEncontrado = null;
+        let claveEvento = null;
+        
+        for (const [fecha, eventosDelDia] of Object.entries(this.eventos)) {
+            const evento = eventosDelDia.find(e => e._id === eventoId);
+            if (evento) {
+                eventoEncontrado = evento;
+                claveEvento = fecha;
+                break;
+            }
+        }
+        
+        if (eventoEncontrado) {
+            await this.editarEvento(eventoId, claveEvento);
+        }
     }
 
     async editarEvento(eventoId, claveEvento) {
@@ -281,11 +274,13 @@ class AgendaSemanalmMongoDB {
         this.fechaSeleccionada = claveEvento;
         this.eventoEditando = eventoId;
         
-        document.getElementById('modalTitle').textContent = `Editar Evento`;
+        const fecha = new Date(claveEvento + 'T00:00:00');
+        const nombreDia = `${fecha.getDate()}/${fecha.getMonth() + 1}/${fecha.getFullYear()}`;
+        
+        document.getElementById('modalTitle').textContent = `Editar Evento - ${nombreDia}`;
         document.getElementById('eventTime').value = evento.time;
         
-        // CORRECCIÓN: Llenar los campos correctos del formulario
-        // Si tienes los datos almacenados en campos separados, úsalos:
+        // Llenar campos si existen
         if (evento.nombreNino) {
             document.getElementById('nombreNino').value = evento.nombreNino;
         }
@@ -305,9 +300,8 @@ class AgendaSemanalmMongoDB {
             document.getElementById('celularTutor').value = evento.celularTutor;
         }
         
-        // Si no tienes esos campos, puedes intentar parsear el title y description:
+        // Si no tienes esos campos, parsear title y description
         if (!evento.nombreNino && evento.title) {
-            // Ejemplo: "Juan Pérez - CEMS" -> extraer nombre
             const partes = evento.title.split(' - ');
             if (partes.length >= 2) {
                 document.getElementById('nombreNino').value = partes[0];
@@ -375,7 +369,6 @@ class AgendaSemanalmMongoDB {
 
     async guardarEvento() {
         const time = document.getElementById('eventTime').value;
-        // CORRECCIÓN: Usar los campos correctos que existen en tu HTML
         const nombreNino = document.getElementById('nombreNino').value.trim();
         const clase = document.getElementById('clase').value;
         const maestro = document.getElementById('maestro').value;
@@ -384,7 +377,6 @@ class AgendaSemanalmMongoDB {
         const celularTutor = document.getElementById('celularTutor').value.trim();
         const saveBtn = document.getElementById('saveBtn');
 
-        // Validación corregida
         if (!time || !nombreNino || !clase || !maestro) {
             this.mostrarError('Por favor completa todos los campos requeridos');
             return;
@@ -397,10 +389,8 @@ class AgendaSemanalmMongoDB {
             const eventoData = {
                 fecha: this.fechaSeleccionada,
                 time,
-                // CORRECCIÓN: Crear el title y description basado en tus datos
                 title: `${nombreNino} - ${clase}`,
                 description: `Maestro: ${maestro}${caracteristicas ? `\nCaracterísticas: ${caracteristicas}` : ''}${nombreTutor ? `\nTutor: ${nombreTutor}` : ''}${celularTutor ? `\nTel: ${celularTutor}` : ''}`,
-                // Datos adicionales para tu aplicación
                 nombreNino,
                 clase,
                 maestro,
@@ -412,7 +402,6 @@ class AgendaSemanalmMongoDB {
 
             let response;
             if (this.eventoEditando) {
-                // Actualizar evento existente
                 response = await fetch(`${this.API_BASE_URL}/eventos/${this.eventoEditando}`, {
                     method: 'PUT',
                     headers: {
@@ -421,7 +410,6 @@ class AgendaSemanalmMongoDB {
                     body: JSON.stringify(eventoData)
                 });
             } else {
-                // Crear nuevo evento
                 response = await fetch(`${this.API_BASE_URL}/eventos`, {
                     method: 'POST',
                     headers: {
@@ -458,15 +446,13 @@ class AgendaSemanalmMongoDB {
     }
 }
 
-let agenda;
+let agendaMes;
 document.addEventListener('DOMContentLoaded', () => {
-    agenda = new AgendaSemanalmMongoDB();
-    agenda.cargarDatosInfantes(); 
-    agenda.cargarMaestros();
+    agendaMes = new AgendaMensualMongoDB();
 });
 
 function closeModal() {
-    agenda.cerrarModal();
+    agendaMes.cerrarModal();
 }
 
 // Funciones del menú
@@ -474,17 +460,12 @@ function toggleMenu() {
     const dropdown = document.getElementById('menuDropdown');
     dropdown.classList.toggle('active');
     
-    // Cerrar menú al hacer click fuera
     document.addEventListener('click', function closeMenu(e) {
         if (!e.target.closest('.menu-container')) {
             dropdown.classList.remove('active');
             document.removeEventListener('click', closeMenu);
         }
     });
-}
-
-function verMes() {
-    window.location.href = '../pages/AgendaMes.html';
 }
 
 function infantes() {
@@ -497,6 +478,10 @@ function masters() {
 
 function irTienda() {
     window.location.href = '../pages/tienda.html';
+}
+
+function volverSemanal() {
+    window.location.href = '../pages/Administrador.html';
 }
 
 function cerrarSesion() {
@@ -515,4 +500,3 @@ function cerrarSesion() {
         }
     }
 }
-
