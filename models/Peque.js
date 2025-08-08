@@ -12,7 +12,7 @@ const pequeSchema = new mongoose.Schema({
     },
     edad: {
         type: String,
-        required: true,
+        // NO requerido aquí porque se calcula automáticamente
         trim: true
     },
     comportamiento: {
@@ -27,7 +27,7 @@ const pequeSchema = new mongoose.Schema({
     },
     tipoSangre: {
         type: String,
-        required: true,
+        required: '',
         enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
     },
     alergias: {
@@ -35,9 +35,15 @@ const pequeSchema = new mongoose.Schema({
         default: '',
         trim: true
     },
-    servicio: {
-        type: String,
+    servicios: {
+        type: [String],
         required: true,
+        validate: {
+            validator: function(v) {
+                return v && v.length > 0;
+            },
+            message: 'Debe seleccionar al menos un servicio'
+        },
         enum: ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial', 'Estimulación temprana']
     },
     nombreTutor: {
@@ -81,8 +87,11 @@ const pequeSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Middleware para calcular la edad automáticamente
-pequeSchema.pre('save', function(next) {
+// Middleware para calcular la edad automáticamente ANTES de validar
+pequeSchema.pre('validate', function(next) {
+    console.log('Middleware pre-validate ejecutándose...');
+    console.log('fechaNacimiento:', this.fechaNacimiento);
+    
     if (this.fechaNacimiento) {
         const hoy = new Date();
         const nacimiento = new Date(this.fechaNacimiento);
@@ -102,10 +111,44 @@ pequeSchema.pre('save', function(next) {
             if (meses <= 0) {
                 meses = 12 + meses;
             }
-            this.edad = `${meses} meses`;
+            this.edad = `${Math.max(meses, 1)} meses`;
         } else {
             this.edad = `${edad} años`;
         }
+        
+        console.log('Edad calculada:', this.edad);
+    }
+    next();
+});
+
+// También mantener el middleware pre-save como respaldo
+pequeSchema.pre('save', function(next) {
+    console.log('Middleware pre-save ejecutándose...');
+    
+    if (this.fechaNacimiento && !this.edad) {
+        const hoy = new Date();
+        const nacimiento = new Date(this.fechaNacimiento);
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const mes = hoy.getMonth() - nacimiento.getMonth();
+        
+        if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+            edad--;
+        }
+        
+        if (edad === 0) {
+            let meses = mes;
+            if (hoy.getDate() < nacimiento.getDate()) {
+                meses--;
+            }
+            if (meses <= 0) {
+                meses = 12 + meses;
+            }
+            this.edad = `${Math.max(meses, 1)} meses`;
+        } else {
+            this.edad = `${edad} años`;
+        }
+        
+        console.log('Edad calculada en pre-save:', this.edad);
     }
     next();
 });

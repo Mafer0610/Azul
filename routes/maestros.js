@@ -12,7 +12,7 @@ router.post('/register', async (req, res) => {
         const { nombreCompleto, edad, celular } = req.body;
 
         if (!nombreCompleto || !edad || !celular) {
-            console.log('⚠️ Faltan campos obligatorios');
+            console.log('Faltan campos obligatorios');
             return res.status(400).json({ error: 'Faltan campos obligatorios' });
         }
 

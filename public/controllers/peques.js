@@ -1,4 +1,3 @@
-
 function calcularEdad(fechaNacimiento) {
     const hoy = new Date();
     const nacimiento = new Date(fechaNacimiento);
@@ -17,7 +16,7 @@ function calcularEdad(fechaNacimiento) {
         if (meses <= 0) {
             meses = 12 + meses;
         }
-        return `${meses} meses`;
+        return `${Math.max(meses, 1)} meses`;
     } else {
         return `${edad} años`;
     }
@@ -34,13 +33,21 @@ document.getElementById('fechaNacimiento').addEventListener('change', function(e
 document.getElementById('pequeForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
+    // Recopilar todos los datos del formulario
     const nombreCompleto = document.getElementById('nombreCompleto').value.trim();
     const fechaNacimiento = document.getElementById('fechaNacimiento').value;
     const comportamiento = document.querySelector('input[name="comportamiento"]:checked')?.value;
     const caracteristicas = document.getElementById('caracteristicas').value.trim();
     const tipoSangre = document.getElementById('tipoSangre').value.trim;
     const alergias = document.getElementById('alergias').value.trim();
-    const servicio = document.getElementById('servicio').value;
+    
+    // Obtener servicios seleccionados (checkboxes)
+    const serviciosSeleccionados = [];
+    const checkboxes = document.querySelectorAll('input[name="servicios"]:checked');
+    checkboxes.forEach(checkbox => {
+        serviciosSeleccionados.push(checkbox.value);
+    });
+    
     const nombreTutor = document.getElementById('nombreTutor').value.trim();
     const celularTutor = document.getElementById('celularTutor').value.trim();
     const correoTutor = document.getElementById('correoTutor').value.trim();
@@ -48,8 +55,14 @@ document.getElementById('pequeForm').addEventListener('submit', async (e) => {
     
     // Validaciones
     if (!nombreCompleto || !fechaNacimiento || !comportamiento || 
-        !servicio || !nombreTutor || !celularTutor || !correoTutor || !fechaPago) {
+        !nombreTutor || !celularTutor || !correoTutor || !fechaPago) {
         showMessage('Por favor complete todos los campos obligatorios (*)', 'error');
+        return;
+    }
+    
+    // Validar que al menos un servicio esté seleccionado
+    if (serviciosSeleccionados.length === 0) {
+        showMessage('Debe seleccionar al menos un servicio', 'error');
         return;
     }
     
@@ -70,6 +83,13 @@ document.getElementById('pequeForm').addEventListener('submit', async (e) => {
         showMessage('La fecha de nacimiento no puede ser futura', 'error');
         return;
     }
+
+    // Validar fecha de pago
+    const fechaPagoNum = parseInt(fechaPago);
+    if (fechaPagoNum < 1 || fechaPagoNum > 31) {
+        showMessage('La fecha de pago debe estar entre 1 y 31', 'error');
+        return;
+    }
     
     const submitBtn = document.getElementById('submitBtn');
     submitBtn.disabled = true;
@@ -86,11 +106,11 @@ document.getElementById('pequeForm').addEventListener('submit', async (e) => {
                 caracteristicas,
                 tipoSangre,
                 alergias,
-                servicio,
+                servicios: serviciosSeleccionados,
                 nombreTutor,
                 celularTutor,
                 correoTutor,
-                fechaPago: parseInt(fechaPago)
+                fechaPago: fechaPagoNum
             })
         });
         
@@ -99,6 +119,7 @@ document.getElementById('pequeForm').addEventListener('submit', async (e) => {
         if (response.ok) {
             showMessage('✅ ' + data.message, 'success');
             document.getElementById('pequeForm').reset();
+            document.getElementById('edad').value = '';
             
             setTimeout(() => {
                 window.location.href = '../pages/infant.html';
@@ -142,9 +163,9 @@ document.getElementById('celularTutor').addEventListener('input', function(e) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-    const fechaNacimiento = document.getElementById('fechaNacimiento').value;
-    if (fechaNacimiento) {
-        const edad = calcularEdad(fechaNacimiento);
+    const fechaNacimiento = document.getElementById('fechaNacimiento');
+    if (fechaNacimiento && fechaNacimiento.value) {
+        const edad = calcularEdad(fechaNacimiento.value);
         document.getElementById('edad').value = edad;
     }
 });

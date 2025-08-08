@@ -81,7 +81,7 @@
                     </div>
 
                     <h3 style="color: #495057; margin-bottom: 20px; border-bottom: 2px solid #ffc107; padding-bottom: 10px;">
-                        Información Personal
+                        👤 Información Personal
                     </h3>
 
                     <div class="form-group">
@@ -91,9 +91,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="edad">Edad *</label>
-                        <input type="number" class="form-control" id="edad" name="edad" min="1" max="18" required>
-                        <div class="invalid-feedback">La edad debe ser entre 1 y 18 años</div>
+                        <label class="form-label" for="fechaNacimiento">Fecha de Nacimiento *</label>
+                        <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" required>
+                        <div class="invalid-feedback">La fecha de nacimiento es obligatoria</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edad">Edad</label>
+                        <input type="text" class="form-control" id="edad" name="edad" readonly placeholder="Se calcula automáticamente">
                     </div>
 
                     <div class="form-group">
@@ -107,9 +112,58 @@
                     </div>
 
                     <div class="form-group">
+                        <label class="form-label" for="tipoSangre">Tipo de Sangre *</label>
+                        <select class="form-control form-select" id="tipoSangre" name="tipoSangre" required>
+                            <option value="">Seleccionar tipo</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                        <div class="invalid-feedback">Selecciona el tipo de sangre</div>
+                    </div>
+
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label">Servicios *</label>
+                        <div class="servicios-container-edit">
+                            <div class="checkbox-option-edit">
+                                <input type="checkbox" id="edit-natacion" name="servicios" value="Natación">
+                                <label for="edit-natacion">Natación</label>
+                            </div>
+                            <div class="checkbox-option-edit">
+                                <input type="checkbox" id="edit-estimulacion" name="servicios" value="Estimulación">
+                                <label for="edit-estimulacion">Estimulación</label>
+                            </div>
+                            <div class="checkbox-option-edit">
+                                <input type="checkbox" id="edit-baby-spa" name="servicios" value="Baby Spa">
+                                <label for="edit-baby-spa">Baby Spa</label>
+                            </div>
+                            <div class="checkbox-option-edit">
+                                <input type="checkbox" id="edit-acuatica-inicial" name="servicios" value="Paquete de Acuática Inicial">
+                                <label for="edit-acuatica-inicial">Paquete de Acuática Inicial</label>
+                            </div>
+                            <div class="checkbox-option-edit">
+                                <input type="checkbox" id="edit-estimulacion-temprana" name="servicios" value="Estimulación temprana">
+                                <label for="edit-estimulacion-temprana">Estimulación temprana</label>
+                            </div>
+                        </div>
+                        <div class="invalid-feedback">Selecciona al menos un servicio</div>
+                    </div>
+
+                    <div class="form-group">
                         <label class="form-label" for="caracteristicas">Características Especiales</label>
                         <textarea class="form-control" id="caracteristicas" name="caracteristicas" rows="4" 
-                                  placeholder="Describe características especiales, necesidades, alergias, etc. (opcional)"></textarea>
+                                  placeholder="Describe características especiales, necesidades, etc. (opcional)"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="alergias">Alergias</label>
+                        <textarea class="form-control" id="alergias" name="alergias" rows="3" 
+                                  placeholder="Describe alergias conocidas (opcional)"></textarea>
                     </div>
 
                     <h3 style="color: #495057; margin: 30px 0 20px 0; border-bottom: 2px solid #ffc107; padding-bottom: 10px;">
@@ -130,7 +184,13 @@
                         <div class="invalid-feedback">El celular debe tener exactamente 10 dígitos</div>
                     </div>
 
-                    <!-- NUEVO CAMPO: Fecha de Pago -->
+                    <div class="form-group">
+                        <label class="form-label" for="correoTutor">Correo del Tutor *</label>
+                        <input type="email" class="form-control" id="correoTutor" name="correoTutor" 
+                               placeholder="ejemplo@email.com" required>
+                        <div class="invalid-feedback">El correo electrónico es obligatorio y debe ser válido</div>
+                    </div>
+
                     <div class="form-group">
                         <label class="form-label" for="fechaPago">Fecha de Pago *</label>
                         <select class="form-control form-select" id="fechaPago" name="fechaPago" required>
@@ -187,6 +247,30 @@
         let currentPeque = null;
         let pequeId = null;
 
+        function calcularEdad(fechaNacimiento) {
+            const hoy = new Date();
+            const nacimiento = new Date(fechaNacimiento);
+            let edad = hoy.getFullYear() - nacimiento.getFullYear();
+            const mes = hoy.getMonth() - nacimiento.getMonth();
+            
+            if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+                edad--;
+            }
+            
+            if (edad === 0) {
+                let meses = mes;
+                if (hoy.getDate() < nacimiento.getDate()) {
+                    meses--;
+                }
+                if (meses <= 0) {
+                    meses = 12 + meses;
+                }
+                return `${Math.max(meses, 1)} meses`;
+            } else {
+                return `${edad} años`;
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             pequeId = urlParams.get('id');
@@ -201,6 +285,14 @@
             
             document.getElementById('celularTutor').addEventListener('input', function(e) {
                 e.target.value = e.target.value.replace(/\D/g, '').substring(0, 10);
+            });
+
+            document.getElementById('fechaNacimiento').addEventListener('change', function(e) {
+                const fechaNacimiento = e.target.value;
+                if (fechaNacimiento) {
+                    const edad = calcularEdad(fechaNacimiento);
+                    document.getElementById('edad').value = edad;
+                }
             });
         });
 
@@ -230,11 +322,35 @@
 
         function fillForm(peque) {
             document.getElementById('nombreCompleto').value = peque.nombreCompleto || '';
+            
+            // Formatear fecha de nacimiento para el input date
+            if (peque.fechaNacimiento) {
+                const fecha = new Date(peque.fechaNacimiento);
+                const fechaFormatted = fecha.toISOString().split('T')[0];
+                document.getElementById('fechaNacimiento').value = fechaFormatted;
+            }
+            
             document.getElementById('edad').value = peque.edad || '';
             document.getElementById('comportamiento').value = peque.comportamiento || '';
+            document.getElementById('tipoSangre').value = peque.tipoSangre || '';
+            
+            // Marcar servicios seleccionados
+            if (peque.servicios && Array.isArray(peque.servicios)) {
+                const checkboxes = document.querySelectorAll('input[name="servicios"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = peque.servicios.includes(checkbox.value);
+                });
+            } else if (peque.servicio) {
+                // Compatibilidad con el campo antiguo
+                const checkbox = document.querySelector(`input[name="servicios"][value="${peque.servicio}"]`);
+                if (checkbox) checkbox.checked = true;
+            }
+            
             document.getElementById('caracteristicas').value = peque.caracteristicas || '';
+            document.getElementById('alergias').value = peque.alergias || '';
             document.getElementById('nombreTutor').value = peque.nombreTutor || '';
             document.getElementById('celularTutor').value = peque.celularTutor || '';
+            document.getElementById('correoTutor').value = peque.correoTutor || '';
             document.getElementById('fechaPago').value = peque.fechaPago || '';
 
             document.title = `Editar - ${peque.nombreCompleto}`;
@@ -253,13 +369,24 @@
             submitBtn.textContent = 'Guardando...';
 
             try {
+                // Obtener servicios seleccionados
+                const serviciosSeleccionados = [];
+                const checkboxes = document.querySelectorAll('input[name="servicios"]:checked');
+                checkboxes.forEach(checkbox => {
+                    serviciosSeleccionados.push(checkbox.value);
+                });
+
                 const formData = {
                     nombreCompleto: document.getElementById('nombreCompleto').value.trim(),
-                    edad: parseInt(document.getElementById('edad').value),
+                    fechaNacimiento: document.getElementById('fechaNacimiento').value,
                     comportamiento: document.getElementById('comportamiento').value,
+                    tipoSangre: document.getElementById('tipoSangre').value.trim,
+                    servicios: serviciosSeleccionados, 
                     caracteristicas: document.getElementById('caracteristicas').value.trim(),
+                    alergias: document.getElementById('alergias').value.trim(),
                     nombreTutor: document.getElementById('nombreTutor').value.trim(),
                     celularTutor: document.getElementById('celularTutor').value.trim(),
+                    correoTutor: document.getElementById('correoTutor').value.trim(),
                     fechaPago: parseInt(document.getElementById('fechaPago').value)
                 };
 
@@ -295,7 +422,7 @@
 
         function validateForm() {
             let isValid = true;
-            const fields = ['nombreCompleto', 'edad', 'comportamiento', 'nombreTutor', 'celularTutor', 'fechaPago'];
+            const fields = ['nombreCompleto', 'fechaNacimiento', 'comportamiento', 'tipoSangre', 'nombreTutor', 'celularTutor', 'correoTutor', 'fechaPago'];
             
             fields.forEach(fieldId => {
                 const field = document.getElementById(fieldId);
@@ -310,15 +437,26 @@
                 }
             });
 
-            const edad = document.getElementById('edad');
-            if (edad.value && (edad.value < 1 || edad.value > 18)) {
-                edad.classList.add('is-invalid');
+            // Validar servicios
+            const serviciosSeleccionados = document.querySelectorAll('input[name="servicios"]:checked');
+            const serviciosContainer = document.querySelector('.servicios-container-edit');
+            if (serviciosSeleccionados.length === 0) {
+                serviciosContainer.classList.add('is-invalid');
                 isValid = false;
+            } else {
+                serviciosContainer.classList.remove('is-invalid');
             }
 
             const celular = document.getElementById('celularTutor');
             if (celular.value && celular.value.length !== 10) {
                 celular.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            const correo = document.getElementById('correoTutor');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (correo.value && !emailRegex.test(correo.value)) {
+                correo.classList.add('is-invalid');
                 isValid = false;
             }
 

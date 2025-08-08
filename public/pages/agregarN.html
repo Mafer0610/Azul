@@ -78,8 +78,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="tipoSangre">Tipo de Sangre *</label>
-                    <select id="tipoSangre" name="tipoSangre" required>
+                    <label for="tipoSangre">Tipo de Sangre</label>
+                    <select id="tipoSangre" name="tipoSangre">
                         <option value="">Seleccionar tipo</option>
                         <option value="A+">A+</option>
                         <option value="A-">A-</option>
@@ -116,16 +116,30 @@
                     <textarea id="alergias" name="alergias" placeholder="Describe alergias conocidas (opcional)"></textarea>
                 </div>
                 
-                <div class="form-group">
-                    <label for="servicio">Servicio *</label>
-                    <select id="servicio" name="servicio" required>
-                        <option value="">Seleccionar servicio</option>
-                        <option value="Natación">Natación</option>
-                        <option value="Estimulación">Estimulación</option>
-                        <option value="Baby Spa">Baby Spa</option>
-                        <option value="Paquete de Acuática Inicial">Paquete de Acuática Inicial</option>
-                        <option value="Estimulación temprana">Estimulación temprana</option>
-                    </select>
+                <div class="form-group-full">
+                    <label>Servicios *</label>
+                    <div class="servicios-container">
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="natacion" name="servicios" value="Natación">
+                            <label for="natacion">Natación</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="estimulacion" name="servicios" value="Estimulación">
+                            <label for="estimulacion">Estimulación</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="baby-spa" name="servicios" value="Baby Spa">
+                            <label for="baby-spa">Baby Spa</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="acuatica-inicial" name="servicios" value="Paquete de Acuática Inicial">
+                            <label for="acuatica-inicial">Paquete de Acuática Inicial</label>
+                        </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="estimulacion-temprana" name="servicios" value="Estimulación temprana">
+                            <label for="estimulacion-temprana">Estimulación temprana</label>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -196,6 +210,6 @@
             </form>
         </div>
     </div>
-    <script src="../controllers/peque.js"></script>
+    <script src="../controllers/peques.js"></script>
 </body>
 </html>

@@ -139,44 +139,201 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Crear
 app.post('/api/peques', async (req, res) => {
     try {
+        console.log('=== INICIO REGISTRO PEQUE ===');
         console.log('Datos recibidos:', req.body);
         
-        const { nombreCompleto, edad, comportamiento, caracteristicas, nombreTutor, celularTutor, fechaPago } = req.body;
+        const { 
+            nombreCompleto, 
+            fechaNacimiento,
+            comportamiento, 
+            caracteristicas, 
+            tipoSangre,
+            alergias,
+            servicios,
+            nombreTutor, 
+            celularTutor, 
+            correoTutor,
+            fechaPago 
+        } = req.body;
         
-        if (!nombreCompleto || !edad || !comportamiento || !nombreTutor || !celularTutor || !fechaPago) {
+        // Validaciones básicas
+        if (!nombreCompleto || !fechaNacimiento || !comportamiento|| 
+            !servicios || !nombreTutor || !celularTutor || !correoTutor || !fechaPago) {
+            console.log('❌ Faltan campos obligatorios');
             return res.status(400).json({ error: 'Faltan campos obligatorios' });
+        }
+
+        // Validar que servicios sea un array y tenga al menos un elemento
+        if (!Array.isArray(servicios) || servicios.length === 0) {
+            console.log('❌ Servicios inválidos:', servicios);
+            return res.status(400).json({ error: 'Debe seleccionar al menos un servicio' });
+        }
+
+        // Validación de fecha de pago
+        if (fechaPago < 1 || fechaPago > 31) {
+            return res.status(400).json({ error: 'La fecha de pago debe estar entre 1 y 31' });
+        }
+
+        // Validación de fecha de nacimiento
+        const fechaNac = new Date(fechaNacimiento);
+        const hoy = new Date();
+        if (fechaNac > hoy) {
+            return res.status(400).json({ error: 'La fecha de nacimiento no puede ser futura' });
+        }
+
+        console.log('✅ Validaciones básicas pasadas');
+
+        // Verificar si ya existe un peque con el mismo nombre
+        const existePeque = await Peque.findOne({ 
+            nombreCompleto: nombreCompleto.trim(),
+            activo: true 
+        });
+        
+        if (existePeque) {
+            console.log('❌ Ya existe peque con ese nombre');
+            return res.status(400).json({ error: 'Ya existe un niño registrado con ese nombre' });
+        }
+
+        console.log('✅ Nombre único verificado');
+
+        // Crear el objeto sin incluir edad (se calculará automáticamente)
+        const pequeData = {
+            nombreCompleto: nombreCompleto.trim(),
+            fechaNacimiento: new Date(fechaNacimiento),
+            comportamiento,
+            caracteristicas: caracteristicas?.trim() || '',
+            tipoSangre: tipoSangre?.trim() || '',
+            alergias: alergias?.trim() || '',
+            servicios,
+            nombreTutor: nombreTutor.trim(),
+            celularTutor: celularTutor.trim(),
+            correoTutor: correoTutor.trim(),
+            fechaPago: parseInt(fechaPago)
+        };
+
+        console.log('Datos para crear Peque:', pequeData);
+
+        const nuevoPeque = new Peque(pequeData);
+        console.log('Peque creado (antes de save):', nuevoPeque);
+
+        const savedPeque = await nuevoPeque.save();
+        console.log('✅ Peque guardado exitosamente:', savedPeque);
+        
+        res.status(201).json({ 
+            message: 'Niño registrado exitosamente',
+            peque: savedPeque 
+        });
+
+    } catch (error) {
+        console.error('❌ ERROR completo al guardar peque:', error);
+        console.error('Stack trace:', error.stack);
+        
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            console.error('Errores de validación:', messages);
+            res.status(400).json({ error: messages.join(', ') });
+        } else if (error.code === 11000) {
+            console.error('Error de duplicado:', error);
+            res.status(400).json({ error: 'Ya existe un niño con esos datos' });
+        } else {
+            console.error('Error genérico:', error.message);
+            res.status(500).json({ error: 'Error interno del servidor: ' + error.message });
+        }
+    }
+});
+
+// Actualizar
+app.put('/api/peques/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { 
+            nombreCompleto, 
+            fechaNacimiento,
+            comportamiento, 
+            caracteristicas, 
+            tipoSangre,
+            alergias,
+            servicios,
+            nombreTutor, 
+            celularTutor, 
+            correoTutor,
+            fechaPago 
+        } = req.body;
+        
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ error: 'ID no válido' });
+        }
+        
+        if (!nombreCompleto || !fechaNacimiento || !comportamiento || 
+            !servicios || !nombreTutor || !celularTutor || !correoTutor || !fechaPago) {
+            return res.status(400).json({ error: 'Faltan campos obligatorios' });
+        }
+
+        if (!Array.isArray(servicios) || servicios.length === 0) {
+            return res.status(400).json({ error: 'Debe seleccionar al menos un servicio' });
+        }
+
+        if (!/^\d{10}$/.test(celularTutor)) {
+            return res.status(400).json({ error: 'El celular debe tener exactamente 10 dígitos' });
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoTutor)) {
+            return res.status(400).json({ error: 'El formato del correo electrónico no es válido' });
         }
 
         if (fechaPago < 1 || fechaPago > 31) {
             return res.status(400).json({ error: 'La fecha de pago debe estar entre 1 y 31' });
         }
 
-        const nuevoPeque = new Peque({
-            nombreCompleto: nombreCompleto.trim(),
-            edad,
-            comportamiento,
-            caracteristicas: caracteristicas || '',
-            nombreTutor: nombreTutor.trim(),
-            celularTutor: celularTutor.trim(),
-            fechaPago: parseInt(fechaPago)
-        });
+        const fechaNac = new Date(fechaNacimiento);
+        const hoy = new Date();
+        if (fechaNac > hoy) {
+            return res.status(400).json({ error: 'La fecha de nacimiento no puede ser futura' });
+        }
 
-        await nuevoPeque.save();
-        console.log('Peque guardado:', nuevoPeque); 
+        const updatedPeque = await Peque.findByIdAndUpdate(
+            id,
+            {
+                nombreCompleto: nombreCompleto.trim(),
+                fechaNacimiento: new Date(fechaNacimiento),
+                comportamiento,
+                caracteristicas: caracteristicas?.trim() || '',
+                tipoSangre: tipoSangre?.trim() || '',
+                alergias: alergias?.trim() || '',
+                servicios,
+                nombreTutor: nombreTutor.trim(),
+                celularTutor: celularTutor.trim(),
+                correoTutor: correoTutor.trim(),
+                fechaPago: parseInt(fechaPago)
+            },
+            { new: true, runValidators: true }
+        );
         
-        res.status(201).json({ 
-            message: 'Niño registrado exitosamente',
-            peque: nuevoPeque 
+        if (!updatedPeque) {
+            return res.status(404).json({ error: 'Niño no encontrado' });
+        }
+        
+        res.json({ 
+            message: 'Información actualizada correctamente', 
+            peque: updatedPeque 
         });
+        
     } catch (error) {
-        console.error('Error guardando peque:', error);
-        res.status(500).json({ error: error.message });
+        console.error('Error actualizando peque:', error);
+        
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            res.status(400).json({ error: messages.join(', ') });
+        } else {
+            res.status(500).json({ error: 'Error del servidor' });
+        }
     }
 });
 
-// Ruta para obtener peques
+// Ruta para obtener 
 app.get('/api/peques', async (req, res) => {
     try {
         const peques = await Peque.find({ activo: true }).sort({ nombreCompleto: 1 });
@@ -200,7 +357,7 @@ app.delete('/api/peques/:id', async (req, res) => {
   }
 });
 
-// Obtener un peque específico por ID
+// Obtener
 app.get('/api/peques/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -218,62 +375,6 @@ app.get('/api/peques/:id', async (req, res) => {
         res.json(peque);
     } catch (error) {
         console.error('Error obteniendo peque:', error);
-        res.status(500).json({ error: 'Error del servidor' });
-    }
-});
-
-// Actualizar un peque por ID
-app.put('/api/peques/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { nombreCompleto, edad, comportamiento, caracteristicas, nombreTutor, celularTutor, fechaPago } = req.body;
-        
-        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ error: 'ID no válido' });
-        }
-        
-        if (!nombreCompleto || !edad || !comportamiento || !nombreTutor || !celularTutor || !fechaPago) {
-            return res.status(400).json({ error: 'Faltan campos obligatorios' });
-        }
-
-        if (edad < 1 || edad > 18) {
-            return res.status(400).json({ error: 'La edad debe estar entre 1 y 18 años' });
-        }
-
-        if (!/^\d{10}$/.test(celularTutor)) {
-            return res.status(400).json({ error: 'El celular debe tener exactamente 10 dígitos' });
-        }
-
-        if (fechaPago < 1 || fechaPago > 31) {
-            return res.status(400).json({ error: 'La fecha de pago debe estar entre 1 y 31' });
-        }
-
-        const updatedPeque = await Peque.findByIdAndUpdate(
-            id,
-            {
-                nombreCompleto: nombreCompleto.trim(),
-                edad: parseInt(edad),
-                comportamiento,
-                caracteristicas: caracteristicas?.trim() || '',
-                nombreTutor: nombreTutor.trim(),
-                celularTutor: celularTutor.trim(),
-                fechaPago: parseInt(fechaPago),
-                updatedAt: new Date()
-            },
-            { new: true, runValidators: true }
-        );
-        
-        if (!updatedPeque) {
-            return res.status(404).json({ error: 'Niño no encontrado' });
-        }
-        
-        res.json({ 
-            message: 'Información actualizada correctamente', 
-            peque: updatedPeque 
-        });
-        
-    } catch (error) {
-        console.error('Error actualizando peque:', error);
         res.status(500).json({ error: 'Error del servidor' });
     }
 });
