@@ -27,8 +27,8 @@ const pequeSchema = new mongoose.Schema({
     },
     tipoSangre: {
         type: String,
-        required: '',
-        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
+        required: false, // CORREGIDO: cambiar de '' a false
+        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', ''] // Agregar cadena vacía como opción válida
     },
     alergias: {
         type: String,
@@ -44,7 +44,7 @@ const pequeSchema = new mongoose.Schema({
             },
             message: 'Debe seleccionar al menos un servicio'
         },
-        enum: ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial', 'Estimulación temprana']
+        enum: ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial y Estimulación temprana']
     },
     nombreTutor: {
         type: String,

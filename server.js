@@ -139,6 +139,9 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Servicios permitidos
+const serviciosPermitidos = ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial y Estimulación temprana'];
+
 // Crear
 app.post('/api/peques', async (req, res) => {
     try {
@@ -170,6 +173,15 @@ app.post('/api/peques', async (req, res) => {
         if (!Array.isArray(servicios) || servicios.length === 0) {
             console.log('❌ Servicios inválidos:', servicios);
             return res.status(400).json({ error: 'Debe seleccionar al menos un servicio' });
+        }
+
+        // Validar que todos los servicios están permitidos
+        const serviciosInvalidos = servicios.filter(servicio => !serviciosPermitidos.includes(servicio));
+        if (serviciosInvalidos.length > 0) {
+            console.log('❌ Servicios no válidos:', serviciosInvalidos);
+            return res.status(400).json({ 
+                error: `Servicios no válidos: ${serviciosInvalidos.join(', ')}` 
+            });
         }
 
         // Validación de fecha de pago
@@ -274,6 +286,14 @@ app.put('/api/peques/:id', async (req, res) => {
 
         if (!Array.isArray(servicios) || servicios.length === 0) {
             return res.status(400).json({ error: 'Debe seleccionar al menos un servicio' });
+        }
+
+        // Validar que todos los servicios están permitidos
+        const serviciosInvalidos = servicios.filter(servicio => !serviciosPermitidos.includes(servicio));
+        if (serviciosInvalidos.length > 0) {
+            return res.status(400).json({ 
+                error: `Servicios no válidos: ${serviciosInvalidos.join(', ')}` 
+            });
         }
 
         if (!/^\d{10}$/.test(celularTutor)) {

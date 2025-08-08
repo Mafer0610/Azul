@@ -38,7 +38,7 @@ document.getElementById('pequeForm').addEventListener('submit', async (e) => {
     const fechaNacimiento = document.getElementById('fechaNacimiento').value;
     const comportamiento = document.querySelector('input[name="comportamiento"]:checked')?.value;
     const caracteristicas = document.getElementById('caracteristicas').value.trim();
-    const tipoSangre = document.getElementById('tipoSangre').value.trim;
+    const tipoSangre = document.getElementById('tipoSangre').value.trim(); // CORREGIDO: quitar el punto después de trim
     const alergias = document.getElementById('alergias').value.trim();
     
     // Obtener servicios seleccionados (checkboxes)
