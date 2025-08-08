@@ -1,21 +1,72 @@
+function calcularEdad(fechaNacimiento) {
+    const hoy = new Date();
+    const nacimiento = new Date(fechaNacimiento);
+    let edad = hoy.getFullYear() - nacimiento.getFullYear();
+    const mes = hoy.getMonth() - nacimiento.getMonth();
+    
+    if (mes < 0 || (mes === 0 && hoy.getDate() < nacimiento.getDate())) {
+        edad--;
+    }
+    
+    if (edad === 0) {
+        let meses = mes;
+        if (hoy.getDate() < nacimiento.getDate()) {
+            meses--;
+        }
+        if (meses <= 0) {
+            meses = 12 + meses;
+        }
+        return `${meses} meses`;
+    } else {
+        return `${edad} años`;
+    }
+}
+
+document.getElementById('fechaNacimiento').addEventListener('change', function(e) {
+    const fechaNacimiento = e.target.value;
+    if (fechaNacimiento) {
+        const edad = calcularEdad(fechaNacimiento);
+        document.getElementById('edad').value = edad;
+    }
+});
+
 document.getElementById('pequeForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const nombreCompleto = document.getElementById('nombreCompleto').value.trim();
-    const edad = document.getElementById('edad').value.trim();
+    const fechaNacimiento = document.getElementById('fechaNacimiento').value;
     const comportamiento = document.querySelector('input[name="comportamiento"]:checked')?.value;
     const caracteristicas = document.getElementById('caracteristicas').value.trim();
+    const tipoSangre = document.getElementById('tipoSangre').value;
+    const alergias = document.getElementById('alergias').value.trim();
+    const servicio = document.getElementById('servicio').value;
     const nombreTutor = document.getElementById('nombreTutor').value.trim();
     const celularTutor = document.getElementById('celularTutor').value.trim();
+    const correoTutor = document.getElementById('correoTutor').value.trim();
     const fechaPago = document.getElementById('fechaPago').value;
     
-    if (!nombreCompleto || !edad || !comportamiento || !nombreTutor || !celularTutor || !fechaPago) {
+    // Validaciones
+    if (!nombreCompleto || !fechaNacimiento || !comportamiento || !tipoSangre || 
+        !servicio || !nombreTutor || !celularTutor || !correoTutor || !fechaPago) {
         showMessage('Por favor complete todos los campos obligatorios (*)', 'error');
         return;
     }
     
     if (celularTutor.length !== 10) {
         showMessage('El celular debe tener exactamente 10 dígitos', 'error');
+        return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(correoTutor)) {
+        showMessage('Por favor ingrese un correo electrónico válido', 'error');
+        return;
+    }
+
+    const fechaNac = new Date(fechaNacimiento);
+    const hoy = new Date();
+    if (fechaNac > hoy) {
+        showMessage('La fecha de nacimiento no puede ser futura', 'error');
         return;
     }
     
@@ -29,11 +80,15 @@ document.getElementById('pequeForm').addEventListener('submit', async (e) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 nombreCompleto,
-                edad,
+                fechaNacimiento,
                 comportamiento,
                 caracteristicas,
+                tipoSangre,
+                alergias,
+                servicio,
                 nombreTutor,
                 celularTutor,
+                correoTutor,
                 fechaPago: parseInt(fechaPago)
             })
         });
@@ -85,10 +140,10 @@ document.getElementById('celularTutor').addEventListener('input', function(e) {
     e.target.value = value;
 });
 
-document.getElementById('edad').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length > 2) {
-        value = value.slice(0, 2);
+document.addEventListener('DOMContentLoaded', function() {
+    const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+    if (fechaNacimiento) {
+        const edad = calcularEdad(fechaNacimiento);
+        document.getElementById('edad').value = edad;
     }
-    e.target.value = value;
 });

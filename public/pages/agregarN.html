@@ -68,8 +68,28 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="edad">Edad *</label>
-                    <input type="text" id="edad" name="edad" required>
+                    <label for="fechaNacimiento">Fecha de Nacimiento *</label>
+                    <input type="date" id="fechaNacimiento" name="fechaNacimiento" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edad">Edad</label>
+                    <input type="text" id="edad" name="edad" readonly placeholder="Se calculará automáticamente">
+                </div>
+                
+                <div class="form-group">
+                    <label for="tipoSangre">Tipo de Sangre *</label>
+                    <select id="tipoSangre" name="tipoSangre" required>
+                        <option value="">Seleccionar tipo</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
                 </div>
                 
                 <div class="form-group-full">
@@ -88,7 +108,24 @@
                 
                 <div class="form-group-full">
                     <label for="caracteristicas">Características</label><br>
-                    <textarea id="caracteristicas" name="caracteristicas" placeholder="Describe características especiales, necesidades, alergias, etc. (opcional)"></textarea>
+                    <textarea id="caracteristicas" name="caracteristicas" placeholder="Describe características especiales, necesidades, etc. (opcional)"></textarea>
+                </div>
+
+                <div class="form-group-full">
+                    <label for="alergias">Alergias</label><br>
+                    <textarea id="alergias" name="alergias" placeholder="Describe alergias conocidas (opcional)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="servicio">Servicio *</label>
+                    <select id="servicio" name="servicio" required>
+                        <option value="">Seleccionar servicio</option>
+                        <option value="Natación">Natación</option>
+                        <option value="Estimulación">Estimulación</option>
+                        <option value="Baby Spa">Baby Spa</option>
+                        <option value="Paquete de Acuática Inicial">Paquete de Acuática Inicial</option>
+                        <option value="Estimulación temprana">Estimulación temprana</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
@@ -101,8 +138,13 @@
                     <input type="tel" id="celularTutor" name="celularTutor" required
                             pattern="[0-9]{10}" placeholder="Ej: 9611234567" maxlength="10">
                 </div>
+
+                <div class="form-group">
+                    <label for="correoTutor">Correo del Tutor *</label>
+                    <input type="email" id="correoTutor" name="correoTutor" required 
+                           placeholder="ejemplo@email.com">
+                </div>
                 
-                <!-- NUEVO CAMPO: Fecha de Pago -->
                 <div class="form-group">
                     <label for="fechaPago">Fecha de Pago *</label>
                     <select id="fechaPago" name="fechaPago" required>
@@ -141,7 +183,6 @@
                     </select>
                 </div>
 
-                <!-- Campo vacío para mantener la estructura del grid -->
                 <div class="form-group"></div>
                 
                 <div class="form-actions">

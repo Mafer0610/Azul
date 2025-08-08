@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda Mensual</title>
+    <link rel="icon" href="../img/calendar.ico" type="image/x-icon" />
     <link rel="stylesheet" href="../styles/stylesAgendaMes.css" />
     <script>
         (function() {
@@ -106,65 +107,71 @@
         </div>
     </div>
 
-    <!-- Modal para agregar eventos (mismo que en Administrador.html) -->
+    <!-- Modal para agregar eventos con z-index mejorado -->
     <div class="modal" id="eventModal">
         <div class="modal-content">
-            <h2 id="modalTitle">Agregar Evento</h2>
+            <div class="modal-header">
+                <h2 id="modalTitle">Agregar Evento</h2>
+                <button type="button" class="close-btn" onclick="closeModal()">×</button>
+            </div>
             <div id="errorMessage" class="error-message" style="display: none;"></div>
-            <form id="eventForm">
-                <div class="form-group">
-                    <label for="eventTime">Hora:</label>
-                    <input type="time" id="eventTime" required>
-                </div>
+            <div class="modal-body">
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label for="eventTime">Hora:</label>
+                        <input type="time" id="eventTime" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="nombreNino">Nombre del Niño:</label>
-                    <input type="text" id="nombreNino" list="sugerenciasNino" required>
-                    <datalist id="sugerenciasNino"></datalist>
-                </div>
+                    <div class="form-group">
+                        <label for="nombreNino">Nombre del Niño:</label>
+                        <input type="text" id="nombreNino" list="sugerenciasNino" required>
+                        <datalist id="sugerenciasNino"></datalist>
+                    </div>
 
-                <div class="form-group">
-                    <label for="clase">Clase:</label>
-                    <select id="clase" required>
-                        <option value="">-- Seleccionar --</option>
-                        <option value="CEMS">CEMS</option>
-                        <option value="AI">AI</option>
-                        <option value="OCUPACIONAL">OCUPACIONAL</option>
-                        <option value="BABY SPA">BABY SPA</option>
-                        <option value="CANCELAR">CANCELAR</option>
-                        <option value="MUESTRA">MUESTRA</option>
-                        <option value="REPOSICIÓN">REPOSICIÓN</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label for="clase">Clase:</label>
+                        <select id="clase" required>
+                            <option value="">-- Seleccionar --</option>
+                            <option value="CEMS">CEMS</option>
+                            <option value="AI">AI</option>
+                            <option value="OCUPACIONAL">OCUPACIONAL</option>
+                            <option value="BABY SPA">BABY SPA</option>
+                            <option value="CANCELAR">CANCELAR</option>
+                            <option value="MUESTRA">MUESTRA</option>
+                            <option value="REPOSICIÓN">REPOSICIÓN</option>
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="maestro">Maestro:</label>
-                    <select id="maestro" required>
-                        <option value="">-- Seleccionar --</option>
-                        <!-- Se llenará dinámicamente desde la base de datos -->
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label for="maestro">Maestro:</label>
+                        <select id="maestro" required>
+                            <option value="">-- Seleccionar --</option>
+                            <!-- Se llenará dinámicamente desde la base de datos -->
+                        </select>
+                    </div>
 
-                <div class="form-group">
-                    <label for="caracteristicasNino">Características:</label>
-                    <textarea id="caracteristicasNino" placeholder="Características del niño..." readonly></textarea>
-                </div>
+                    <div class="form-group">
+                        <label for="caracteristicasNino">Características:</label>
+                        <textarea id="caracteristicasNino" placeholder="Características del niño..." readonly></textarea>
+                    </div>
 
-                <div class="form-group">
-                    <label for="nombreTutor">Nombre del Tutor:</label>
-                    <input type="text" id="nombreTutor" readonly>
-                </div>
+                    <div class="form-group">
+                        <label for="nombreTutor">Nombre del Tutor:</label>
+                        <input type="text" id="nombreTutor" readonly>
+                    </div>
 
-                <div class="form-group">
-                    <label for="celularTutor">No. Celular del Tutor:</label>
-                    <input type="tel" id="celularTutor" readonly>
-                </div>
+                    <div class="form-group">
+                        <label for="celularTutor">No. Celular del Tutor:</label>
+                        <input type="tel" id="celularTutor" readonly>
+                    </div>
 
-                <div class="modal-buttons">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="saveBtn">Guardar</button>
-                </div>
-            </form>
+                    <div class="modal-buttons">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="saveBtn">Guardar</button>
+                        <button type="button" class="btn btn-danger" id="deleteBtn" style="display: none;" onclick="agendaMes.eliminarEvento(agendaMes.eventoEditando)">Eliminar</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
     
