@@ -133,16 +133,14 @@ class AgendaMensualMongoDB {
         const primerDia = new Date(this.añoActual, this.mesActual, 1);
         const ultimoDia = new Date(this.añoActual, this.mesActual + 1, 0);
         
-        // Calcular el primer día a mostrar (puede ser del mes anterior)
         const inicioCalendario = new Date(primerDia);
         const diaSemana = primerDia.getDay();
-        const diasAtras = diaSemana === 0 ? 6 : diaSemana - 1; // Lunes = 0
+        const diasAtras = diaSemana === 0 ? 6 : diaSemana - 1;
         inicioCalendario.setDate(primerDia.getDate() - diasAtras);
         
         let html = '';
         let fechaActual = new Date(inicioCalendario);
         
-        // Generar 6 semanas (42 días)
         for (let i = 0; i < 42; i++) {
             const claveEvento = this.obtenerClaveEvento(fechaActual);
             const eventosDelDia = this.eventos[claveEvento] || [];
@@ -244,7 +242,6 @@ class AgendaMensualMongoDB {
     }
 
     async verDetalleEvento(eventoId) {
-        // Buscar el evento en todos los días
         let eventoEncontrado = null;
         let claveEvento = null;
         
@@ -280,7 +277,6 @@ class AgendaMensualMongoDB {
         document.getElementById('modalTitle').textContent = `Editar Evento - ${nombreDia}`;
         document.getElementById('eventTime').value = evento.time;
         
-        // Llenar campos si existen
         if (evento.nombreNino) {
             document.getElementById('nombreNino').value = evento.nombreNino;
         }
@@ -300,7 +296,6 @@ class AgendaMensualMongoDB {
             document.getElementById('celularTutor').value = evento.celularTutor;
         }
         
-        // Si no tienes esos campos, parsear title y description
         if (!evento.nombreNino && evento.title) {
             const partes = evento.title.split(' - ');
             if (partes.length >= 2) {
@@ -455,7 +450,6 @@ function closeModal() {
     agendaMes.cerrarModal();
 }
 
-// Funciones del menú
 function toggleMenu() {
     const dropdown = document.getElementById('menuDropdown');
     dropdown.classList.toggle('active');
@@ -486,14 +480,11 @@ function volverSemanal() {
 
 function cerrarSesion() {
     if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-        // Limpiar datos de autenticación
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('loginTimestamp');
         
-        // Redirigir al login
         window.location.href = '../index.html';
     } else {
-        // Cerrar el menú si cancela
         const dropdown = document.getElementById('menuDropdown');
         if (dropdown) {
             dropdown.classList.remove('active');

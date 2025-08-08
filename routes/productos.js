@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Producto = require('../models/Producto');
 
-// Registrar nuevo producto
 router.post('/register', async (req, res) => {
     try {
         const { nombre, cantidad, precio, caracteristicas } = req.body;
@@ -34,7 +33,6 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// Obtener productos activos
 router.get('/', async (req, res) => {
     try {
         const productos = await Producto.find({ activo: true }).sort({ nombre: 1 });
@@ -43,7 +41,6 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener productos' });
     }
 });
-// Eliminar producto por ID
 router.delete('/:id', async (req, res) => {
     try {
         const producto = await Producto.findByIdAndDelete(req.params.id);
@@ -56,7 +53,6 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-// Vender producto
 router.put('/vender/:id', async (req, res) => {
     const { cantidadVendida } = req.body;
 

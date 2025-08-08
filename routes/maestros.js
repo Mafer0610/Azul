@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Maestro = require('../models/Maestro');
 
-// Registrar un nuevo maestro
 router.post('/register', async (req, res) => {
     try {
         console.log('📌 INICIO REGISTRO DE MAESTRO');

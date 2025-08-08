@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Esquema para usuarios
 const userSchema = new mongoose.Schema({
     username: { 
         type: String, 
@@ -19,10 +18,9 @@ const userSchema = new mongoose.Schema({
         default: 'user'
     }
 }, {
-    timestamps: true // Esto agrega createdAt y updatedAt automáticamente
+    timestamps: true 
 });
 
-// Crear el modelo
 const User = mongoose.model('User', userSchema, 'users');
 
 module.exports = User;

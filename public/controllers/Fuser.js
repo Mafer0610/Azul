@@ -1,12 +1,10 @@
 class AgendaVisualizacion {
     constructor() {
         this.eventos = {};
-        // Solo 6 días (sin domingo)
         this.diasSemana = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         this.meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         this.semanaActual = 0;
         
-        // Configuración de la API - CAMBIAR POR TU URL DE SERVIDOR
         this.API_BASE_URL = 'http://localhost:5000/api';
         this.USER_ID = 'user_' + Date.now();
         
@@ -43,7 +41,6 @@ class AgendaVisualizacion {
         inicioSemana.setDate(hoy.getDate() - hoy.getDay() + 1 + (offsetSemanas * 7));
         
         const fechas = [];
-        // Solo 6 días (Lunes a Sábado)
         for (let i = 0; i < 6; i++) {
             const fecha = new Date(inicioSemana);
             fecha.setDate(inicioSemana.getDate() + i);
@@ -159,12 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
     agenda = new AgendaVisualizacion();
 });
 
-// Funciones del menú
 function toggleMenu() {
     const dropdown = document.getElementById('menuDropdown');
     dropdown.classList.toggle('active');
     
-    // Cerrar menú al hacer click fuera
     document.addEventListener('click', function closeMenu(e) {
         if (!e.target.closest('.menu-container')) {
             dropdown.classList.remove('active');
@@ -175,14 +170,11 @@ function toggleMenu() {
 
 function cerrarSesion() {
     if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-        // Limpiar datos de autenticación
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('loginTimestamp');
         
-        // Redirigir al login
         window.location.href = '../index.html';
     } else {
-        // Cerrar el menú si cancela
         const dropdown = document.getElementById('menuDropdown');
         if (dropdown) {
             dropdown.classList.remove('active');

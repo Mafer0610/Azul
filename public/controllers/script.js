@@ -16,8 +16,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
 
         if (data.message) {
             alert(data.message);
-            // Redirigir al login
-            window.location.href = "login.html";
+            window.location.href = "../index.html";
         } else {
             alert(data.error || "Error en el registro, intenta de nuevo.");
         }

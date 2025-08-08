@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const Peque = require('../models/Peque');
 
-// Crear un nuevo peque
 router.post('/register', async (req, res) => {
     try {
         console.log('INICIO REGISTRO');

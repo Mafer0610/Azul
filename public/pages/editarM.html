@@ -7,25 +7,21 @@
     <link rel="stylesheet" href="../styles/stylesAgregarM.css" />
     <script>
         (function() {
-            // Verificar autenticación antes de cargar la página
             function checkAuth() {
                 const isAuthenticated = localStorage.getItem('isAuthenticated');
                 const loginTimestamp = localStorage.getItem('loginTimestamp');
                 
-                // Verificar si está autenticado
                 if (!isAuthenticated || isAuthenticated !== 'true') {
                     redirectToLogin();
                     return;
                 }
                 
-                // Verificar si la sesión ha expirado (opcional - 8 horas)
                 if (loginTimestamp) {
                     const currentTime = Date.now();
                     const loginTime = parseInt(loginTimestamp);
-                    const eightHours = 8 * 60 * 60 * 1000; // 8 horas en millisegundos
+                    const eightHours = 8 * 60 * 60 * 1000;
                     
                     if (currentTime - loginTime > eightHours) {
-                        // Sesión expirada
                         localStorage.removeItem('isAuthenticated');
                         localStorage.removeItem('loginTimestamp');
                         alert('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
@@ -36,24 +32,19 @@
             }
             
             function redirectToLogin() {
-                // Evitar bucles infinitos
                 if (window.location.pathname.includes('index.html') || 
                     window.location.pathname === '/' || 
                     window.location.pathname.endsWith('/')) {
                     return;
                 }
                 
-                // Redirigir al login
                 window.location.replace('../index.html');
             }
             
-            // Ejecutar verificación inmediatamente
             checkAuth();
             
-            // También verificar cuando la página se enfoca (usuario regresa a la pestaña)
             window.addEventListener('focus', checkAuth);
             
-            // Verificar periódicamente cada 5 minutos
             setInterval(checkAuth, 5 * 60 * 1000);
         })();
     </script>
@@ -99,7 +90,6 @@
     </div>
     
     <script>
-        // Obtener el ID del maestro de la URL
         const urlParams = new URLSearchParams(window.location.search);
         const maestroId = urlParams.get('id');
         
@@ -108,7 +98,6 @@
             window.location.href = 'master.html';
         }
         
-        // Cargar los datos del maestro al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             cargarDatosMaestro();
         });
@@ -123,7 +112,6 @@
                 
                 const maestro = await response.json();
                 
-                // Llenar el formulario con los datos actuales
                 document.getElementById('nombreCompleto').value = maestro.nombreCompleto;
                 document.getElementById('edad').value = maestro.edad;
                 document.getElementById('celular').value = maestro.celular;
@@ -135,7 +123,6 @@
             }
         }
         
-        // Manejar el envío del formulario
         document.getElementById('editMaestroForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -143,7 +130,6 @@
             const edad = document.getElementById('edad').value.trim();
             const celular = document.getElementById('celular').value.trim();
             
-            // Validaciones básicas
             if (!nombreCompleto || !edad || !celular) {
                 alert('Por favor complete todos los campos');
                 return;
@@ -188,7 +174,6 @@
             }
         }
         
-        // Validación en tiempo real del celular
         document.getElementById('celular').addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length > 10) {

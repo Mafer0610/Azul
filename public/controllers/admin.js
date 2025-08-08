@@ -46,7 +46,6 @@ class AgendaSemanalmMongoDB {
         inicioSemana.setDate(hoy.getDate() - hoy.getDay() + 1 + (offsetSemanas * 7));
         
         const fechas = [];
-        // CAMBIADO: Solo 6 días (Lunes a Sábado)
         for (let i = 0; i < 6; i++) {
             const fecha = new Date(inicioSemana);
             fecha.setDate(inicioSemana.getDate() + i);
@@ -68,7 +67,7 @@ class AgendaSemanalmMongoDB {
         try {
             const fechasSemana = this.obtenerFechasSemana(this.semanaActual);
             const fechaInicio = this.obtenerClaveEvento(fechasSemana[0]);
-            const fechaFin = this.obtenerClaveEvento(fechasSemana[5]); // CAMBIADO: índice 5 en lugar de 6
+            const fechaFin = this.obtenerClaveEvento(fechasSemana[5]);
 
             const response = await fetch(`${this.API_BASE_URL}/eventos?fechaInicio=${fechaInicio}&fechaFin=${fechaFin}`);
             
@@ -109,13 +108,11 @@ class AgendaSemanalmMongoDB {
                 );
 
                 if (encontrado) {
-                    // CORRECCIÓN: Usar las propiedades correctas del modelo
                     document.getElementById('caracteristicasNino').value = encontrado.caracteristicas || '';
-                    document.getElementById('nombreTutor').value = encontrado.nombreTutor || ''; // Era 'tutor'
-                    document.getElementById('celularTutor').value = encontrado.celularTutor || ''; // Era 'celular'
+                    document.getElementById('nombreTutor').value = encontrado.nombreTutor || '';
+                    document.getElementById('celularTutor').value = encontrado.celularTutor || '';
                     console.log('Infante encontrado:', encontrado);
                 } else {
-                    // Limpiar campos si no se encuentra el niño
                     document.getElementById('caracteristicasNino').value = '';
                     document.getElementById('nombreTutor').value = '';
                     document.getElementById('celularTutor').value = '';
@@ -123,9 +120,7 @@ class AgendaSemanalmMongoDB {
                 }
             });
 
-            // OPCIONAL: También puedes agregar un evento 'change' para cuando seleccionan de la lista
             document.getElementById('nombreNino').addEventListener('change', (e) => {
-                // Disparar el mismo evento que 'input' para consistencia
                 e.target.dispatchEvent(new Event('input'));
             });
         } catch (error) {
@@ -144,9 +139,8 @@ class AgendaSemanalmMongoDB {
             selector.innerHTML = '<option value="">-- Seleccionar --</option>';
             this.maestros.forEach(m => {
                 const option = document.createElement('option');
-                // CORRECCIÓN: Usar 'nombreCompleto' en lugar de 'nombre'
-                option.value = m.nombreCompleto;  // Era m.nombre
-                option.textContent = m.nombreCompleto;  // Era m.nombre
+                option.value = m.nombreCompleto;
+                option.textContent = m.nombreCompleto;
                 selector.appendChild(option);
             });
         } catch (error) {
@@ -189,15 +183,13 @@ class AgendaSemanalmMongoDB {
         eventos.sort((a, b) => a.time.localeCompare(b.time));
 
         return eventos.map((evento) => {
-            // Extraer la clase del título del evento
             let clase = '';
             if (evento.title && evento.title.includes(' - ')) {
-                clase = evento.title.split(' - ')[1]; // Obtiene la parte después del " - "
+                clase = evento.title.split(' - ')[1];
             } else if (evento.clase) {
-                clase = evento.clase; // Si tienes el campo clase directamente
+                clase = evento.clase;
             }
             
-            // Obtener el color según la clase (solo para el borde)
             const colorBorde = this.getColorPorClase(clase);
             
             return `
@@ -214,7 +206,6 @@ class AgendaSemanalmMongoDB {
         }).join('');
     }
 
-    // Tu función getColorPorClase se mantiene igual:
     getColorPorClase(clase) {
         const colores = {
             'CEMS': '#C4C7F2',
@@ -225,7 +216,7 @@ class AgendaSemanalmMongoDB {
             'MUESTRA': '#C6E0B4',
             'REPOSICIÓN': '#FF00FF'
         };
-        return colores[clase] || '#F24B99'; // Color por defecto si no encuentra la clase
+        return colores[clase] || '#F24B99';
     }
 
     formatearHora(hora) {
@@ -284,8 +275,6 @@ class AgendaSemanalmMongoDB {
         document.getElementById('modalTitle').textContent = `Editar Evento`;
         document.getElementById('eventTime').value = evento.time;
         
-        // CORRECCIÓN: Llenar los campos correctos del formulario
-        // Si tienes los datos almacenados en campos separados, úsalos:
         if (evento.nombreNino) {
             document.getElementById('nombreNino').value = evento.nombreNino;
         }
@@ -305,9 +294,7 @@ class AgendaSemanalmMongoDB {
             document.getElementById('celularTutor').value = evento.celularTutor;
         }
         
-        // Si no tienes esos campos, puedes intentar parsear el title y description:
         if (!evento.nombreNino && evento.title) {
-            // Ejemplo: "Juan Pérez - CEMS" -> extraer nombre
             const partes = evento.title.split(' - ');
             if (partes.length >= 2) {
                 document.getElementById('nombreNino').value = partes[0];
@@ -375,7 +362,6 @@ class AgendaSemanalmMongoDB {
 
     async guardarEvento() {
         const time = document.getElementById('eventTime').value;
-        // CORRECCIÓN: Usar los campos correctos que existen en tu HTML
         const nombreNino = document.getElementById('nombreNino').value.trim();
         const clase = document.getElementById('clase').value;
         const maestro = document.getElementById('maestro').value;
@@ -384,7 +370,6 @@ class AgendaSemanalmMongoDB {
         const celularTutor = document.getElementById('celularTutor').value.trim();
         const saveBtn = document.getElementById('saveBtn');
 
-        // Validación corregida
         if (!time || !nombreNino || !clase || !maestro) {
             this.mostrarError('Por favor completa todos los campos requeridos');
             return;
@@ -397,10 +382,8 @@ class AgendaSemanalmMongoDB {
             const eventoData = {
                 fecha: this.fechaSeleccionada,
                 time,
-                // CORRECCIÓN: Crear el title y description basado en tus datos
                 title: `${nombreNino} - ${clase}`,
                 description: `Maestro: ${maestro}${caracteristicas ? `\nCaracterísticas: ${caracteristicas}` : ''}${nombreTutor ? `\nTutor: ${nombreTutor}` : ''}${celularTutor ? `\nTel: ${celularTutor}` : ''}`,
-                // Datos adicionales para tu aplicación
                 nombreNino,
                 clase,
                 maestro,
@@ -412,7 +395,6 @@ class AgendaSemanalmMongoDB {
 
             let response;
             if (this.eventoEditando) {
-                // Actualizar evento existente
                 response = await fetch(`${this.API_BASE_URL}/eventos/${this.eventoEditando}`, {
                     method: 'PUT',
                     headers: {
@@ -421,7 +403,6 @@ class AgendaSemanalmMongoDB {
                     body: JSON.stringify(eventoData)
                 });
             } else {
-                // Crear nuevo evento
                 response = await fetch(`${this.API_BASE_URL}/eventos`, {
                     method: 'POST',
                     headers: {
@@ -469,12 +450,10 @@ function closeModal() {
     agenda.cerrarModal();
 }
 
-// Funciones del menú
 function toggleMenu() {
     const dropdown = document.getElementById('menuDropdown');
     dropdown.classList.toggle('active');
     
-    // Cerrar menú al hacer click fuera
     document.addEventListener('click', function closeMenu(e) {
         if (!e.target.closest('.menu-container')) {
             dropdown.classList.remove('active');
@@ -501,14 +480,11 @@ function irTienda() {
 
 function cerrarSesion() {
     if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-        // Limpiar datos de autenticación
         localStorage.removeItem('isAuthenticated');
         localStorage.removeItem('loginTimestamp');
         
-        // Redirigir al login
         window.location.href = '../index.html';
     } else {
-        // Cerrar el menú si cancela
         const dropdown = document.getElementById('menuDropdown');
         if (dropdown) {
             dropdown.classList.remove('active');

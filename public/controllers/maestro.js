@@ -1,9 +1,7 @@
-// Verificar si estamos en modo edición
 const urlParams = new URLSearchParams(window.location.search);
 const editId = urlParams.get('edit');
 let isEditing = !!editId;
 
-// Cargar datos del maestro si estamos editando
 if (isEditing) {
     loadMaestroData(editId);
     document.querySelector('.form-header h1').textContent = 'Editar Maestro';
@@ -18,7 +16,6 @@ async function loadMaestroData(id) {
         
         const maestro = await response.json();
         
-        // Llenar el formulario con los datos existentes
         document.getElementById('nombreCompleto').value = maestro.nombreCompleto;
         document.getElementById('edad').value = maestro.edad;
         document.getElementById('celular').value = maestro.celular;

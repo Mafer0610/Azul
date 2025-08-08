@@ -1,7 +1,6 @@
 document.getElementById('pequeForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     
-    // Validar que todos los campos obligatorios estén llenos
     const nombreCompleto = document.getElementById('nombreCompleto').value.trim();
     const edad = document.getElementById('edad').value.trim();
     const comportamiento = document.querySelector('input[name="comportamiento"]:checked')?.value;
@@ -10,7 +9,6 @@ document.getElementById('pequeForm').addEventListener('submit', async (e) => {
     const celularTutor = document.getElementById('celularTutor').value.trim();
     const fechaPago = document.getElementById('fechaPago').value;
     
-    // Validaciones
     if (!nombreCompleto || !edad || !comportamiento || !nombreTutor || !celularTutor || !fechaPago) {
         showMessage('Por favor complete todos los campos obligatorios (*)', 'error');
         return;
@@ -66,7 +64,6 @@ function showMessage(message, type) {
     container.innerHTML = `<div class="${type}-message">${message}</div>`;
     container.scrollIntoView({ behavior: 'smooth' });
     
-    // Limpiar mensaje después de 5 segundos si es de error
     if (type === 'error') {
         setTimeout(() => {
             container.innerHTML = '';
@@ -80,7 +77,6 @@ function cancelarRegistro() {
     }
 }
 
-// Validación en tiempo real para el celular
 document.getElementById('celularTutor').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 10) {
@@ -89,7 +85,6 @@ document.getElementById('celularTutor').addEventListener('input', function(e) {
     e.target.value = value;
 });
 
-// Validación en tiempo real para la edad (solo números)
 document.getElementById('edad').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     if (value.length > 2) {
