@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maestros</title>
+    <link rel="stylesheet" href="../styles/stylesMaster.css" />
+</head>
+<body>
+    <a href="Administrador.html" class="back-link">← Volver</a>
+    
+    <div class="container">
+        <div class="header">
+            <h1>👨‍🏫 Gestión de Maestros</h1>
+            <p>Administra la información de los maestros registrados en el sistema</p>
+        </div>
+        
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar por nombre o celular...">
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalMaestros">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="refreshData()">🔄 Actualizar</button>
+                <a href="agregarM.html" class="btn btn-primary">➕ Agregar Maestro</a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div id="loading" class="loading">
+                <div class="loading-spinner"></div>
+                Cargando datos...
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>📋 No hay maestros registrados</h3>
+                <p>Comienza agregando el primer maestro al sistema</p>
+                <a href="agregarM.html" class="btn btn-primary">➕ Registrar Primer Maestro</a>
+            </div>
+
+            <table class="table" id="maestrosTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>👤 Nombre Completo</th>
+                        <th>🎂 Edad</th>
+                        <th>📱 Celular</th>
+                        <th>📅 Registro</th>
+                        <th>⚙️ Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="maestrosTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allMaestros = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMaestros();
+            document.getElementById('searchInput').addEventListener('input', filterMaestros);
+        });
+
+        async function loadMaestros() {
+            showLoading(true);
+            try {
+                const response = await fetch('http://localhost:5000/api/maestros');
+                if (!response.ok) throw new Error(`Error: ${response.status}`);
+
+                const maestros = await response.json();
+                allMaestros = maestros;
+                displayMaestros(maestros);
+                updateStats(maestros);
+            } catch (error) {
+                console.error('Error cargando maestros:', error);
+                showError('Error al cargar los datos. Verifica que el servidor esté funcionando.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayMaestros(maestros) {
+            const tbody = document.getElementById('maestrosTableBody');
+            const table = document.getElementById('maestrosTable');
+            const emptyState = document.getElementById('emptyState');
+
+            if (maestros.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = maestros.map(m => `
+                <tr>
+                    <td><strong>${m.nombreCompleto}</strong></td>
+                    <td>${m.edad}</td>
+                    <td>${formatPhone(m.celular)}</td>
+                    <td>${formatDate(m.createdAt)}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-warning btn-sm" onclick="editMaestro('${m._id}')">✏️ Editar</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteMaestro('${m._id}', '${m.nombreCompleto}')">🗑️ Eliminar</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats(maestros) {
+            document.getElementById('totalMaestros').textContent = maestros.length;
+        }
+
+        function filterMaestros() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            if (term === '') {
+                displayMaestros(allMaestros);
+                updateStats(allMaestros);
+                return;
+            }
+
+            const filtered = allMaestros.filter(m =>
+                m.nombreCompleto.toLowerCase().includes(term) ||
+                m.celular.includes(term)
+            );
+
+            displayMaestros(filtered);
+            updateStats(filtered);
+        }
+
+        async function deleteMaestro(id, nombre) {
+            if (!confirm(`¿Eliminar maestro "${nombre}"? Esta acción no se puede deshacer.`)) return;
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/maestros/${id}`, { method: 'DELETE' });
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(`✅ ${data.message}`);
+                    loadMaestros();
+                } else {
+                    alert(`❌ Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error eliminando maestro:', error);
+                alert('❌ Error al conectar con el servidor');
+            }
+        }
+
+        function editMaestro(id) {
+            // Redirigir a la página de edición con el ID del maestro
+            window.location.href = `editarM.html?id=${id}`;
+        }
+
+        function refreshData() {
+            document.getElementById('searchInput').value = '';
+            loadMaestros();
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+
+        function showError(message) {
+            document.querySelector('.table-container').innerHTML = `
+                <div class="empty-state">
+                    <h3>❌ Error</h3>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="loadMaestros()">🔄 Reintentar</button>
+                </div>
+            `;
+        }
+
+        function formatPhone(phone) {
+            return phone.length === 10 ? `(${phone.slice(0,3)}) ${phone.slice(3,6)}-${phone.slice(6)}` : phone;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+    </script>
+</body>
+</html>

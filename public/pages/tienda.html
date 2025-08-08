@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventario de Tienda</title>
+    <link rel="stylesheet" href="../styles/stylesTienda.css" />
+</head>
+<body>
+    <a href="Administrador.html" class="back-link">← Volver</a>
+    <div class="container">
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Buscar producto..." />
+            <button onclick="refreshData()">Actualizar</button>
+            <a href="agregarProducto.html" class="btn btn-primary">Agregar Producto</a>
+        </div>
+
+        <div id="loading">Cargando productos...</div>
+        <table id="productosTable" style="display: none;">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Cantidad</th>
+                    <th>Precio</th>
+                    <th>Características</th>
+                    <th>Registro</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="productosTableBody"></tbody>
+        </table>
+
+        <div id="emptyState" style="display: none;">
+            <p>No hay productos registrados.</p>
+            <a href="agregarProducto.html" class="btn btn-primary">Registrar Primer Producto</a>
+        </div>
+    </div>
+
+    <script>
+        let allProductos = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProductos();
+            document.getElementById('searchInput').addEventListener('input', filterProductos);
+        });
+
+        async function loadProductos() {
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const res = await fetch('http://localhost:5000/productos');
+                if (!res.ok) throw new Error('Error al cargar');
+
+                const productos = await res.json();
+                allProductos = productos;
+                displayProductos(productos);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('emptyState').innerHTML = 'Error al cargar productos';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayProductos(productos) {
+            const tbody = document.getElementById('productosTableBody');
+            const table = document.getElementById('productosTable');
+            const emptyState = document.getElementById('emptyState');
+
+            if (productos.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = productos.map(p => `
+                <tr>
+                    <td><strong>${p.nombre}</strong></td>
+                    <td>${p.cantidad}</td>
+                    <td>$${parseFloat(p.precio).toFixed(2)}</td>
+                    <td>${p.caracteristicas}</td>
+                    <td>${formatDate(p.createdAt)}</td>
+                    <td class="actions">
+                        <button onclick="venderProducto('${p._id}', '${p.nombre}')">💸 Vender</button>
+                        <button onclick="deleteProducto('${p._id}', '${p.nombre}')">🗑️ Eliminar</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterProductos() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allProductos.filter(p =>
+                p.nombre.toLowerCase().includes(term) ||
+                p.caracteristicas?.toLowerCase().includes(term)
+            );
+            displayProductos(filtered);
+        }
+
+        async function deleteProducto(id, nombre) {
+            if (!confirm(`¿Eliminar el producto "${nombre}"?`)) return;
+            try {
+                const res = await fetch(`http://localhost:5000/productos/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    loadProductos();
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert('Error al conectar con el servidor');
+            }
+        }
+
+        function refreshData() {
+            document.getElementById('searchInput').value = '';
+            loadProductos();
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-MX', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+        async function deleteProducto(id, nombre) {
+            if (!confirm(`¿Eliminar el producto "${nombre}"?`)) return;
+            try {
+                const res = await fetch(`http://localhost:5000/productos/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    loadProductos(); // refrescar tabla
+                } else {
+                    alert(data.error || 'No se pudo eliminar');
+                }
+            } catch (err) {
+                alert('Error al conectar con el servidor');
+                console.error(err);
+            }
+        }
+
+        async function venderProducto(id, nombre) {
+            const vendido = prompt(`¿Cuántas unidades de "${nombre}" deseas vender?`);
+            if (!vendido || isNaN(vendido) || vendido <= 0) return alert('Cantidad inválida');
+
+            try {
+                const res = await fetch(`http://localhost:5000/productos/vender/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cantidadVendida: parseInt(vendido) })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    loadProductos(); // refrescar tabla
+                } else {
+                    alert(data.error || 'No se pudo vender');
+                }
+            } catch (err) {
+                alert('Error al conectar con el servidor');
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>

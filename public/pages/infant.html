@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Niños Registrados</title>
+    <link rel="stylesheet" href="../styles/stylesInfant.css" />
+</head>
+<body>
+    <a href="Administrador.html" class="back-link">← Volver</a>
+    <div class="container">
+        <div class="header">
+            <h1>Lista de Niños Registrados</h1>
+            <p>Gestiona y visualiza todos los infantes registrados en el sistema</p>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Buscar por nombre, tutor o diagnóstico..."></span>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalPeques">0</div>
+                    <div class="stat-label">Total</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="neurotipicoCount">0</div>
+                    <div class="stat-label">Neurotípicos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="neurodivergenteCount">0</div>
+                    <div class="stat-label">Neurodivergentes</div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-success" onclick="refreshData()">
+                    Actualizar
+                </button>
+                <a href="agregarN.html" class="btn btn-primary">
+                    Agregar Niño
+                </a>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <div id="loading" class="loading">
+                <div class="loading-spinner"></div>
+                Cargando datos...
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <h3>No hay niños registrados</h3>
+                <p>Comienza agregando el primer niño al sistema</p>
+                <a href="agregarN.html" class="btn btn-primary">
+                    Registrar Primer Niño
+                </a>
+            </div>
+
+            <table class="table" id="pequesTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Nombre Completo</th>
+                        <th>Edad</th>
+                        <th>Diagnóstico</th>
+                        <th>Tutor</th>
+                        <th>Celular</th>
+                        <th>Fecha de Pago</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="pequesTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allPeques = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPeques();
+            
+            document.getElementById('searchInput').addEventListener('input', function() {
+                filterPeques();
+            });
+        });
+
+        async function loadPeques() {
+            showLoading(true);
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/peques');
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status}`);
+                }
+                
+                const peques = await response.json();
+                allPeques = peques;
+                displayPeques(peques);
+                updateStats(peques);
+                
+            } catch (error) {
+                console.error('Error cargando peques:', error);
+                showError('Error al cargar los datos. Verifica que el servidor esté funcionando.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function displayPeques(peques) {
+            const tbody = document.getElementById('pequesTableBody');
+            const table = document.getElementById('pequesTable');
+            const emptyState = document.getElementById('emptyState');
+            
+            if (peques.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+            
+            tbody.innerHTML = peques.map(peque => `
+                <tr>
+                    <td><strong>${peque.nombreCompleto}</strong></td>
+                    <td>${peque.edad}</td>
+                    <td>
+                        <span class="badge badge-${peque.comportamiento}">
+                            ${peque.comportamiento}
+                        </span>
+                    </td>
+                    <td>${peque.nombreTutor}</td>
+                    <td>${formatPhone(peque.celularTutor)}</td>
+                    <td>${formatPaymentDate(peque.fechaPago)}</td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-info btn-sm" onclick="viewPeque('${peque._id}')">
+                                Ver más
+                            </button>
+                            <button class="btn btn-warning btn-sm" onclick="editPeque('${peque._id}')">
+                                Editar
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deletePeque('${peque._id}', '${peque.nombreCompleto}')">
+                                Eliminar
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats(peques) {
+            const total = peques.length;
+            const neurotipico = peques.filter(p => p.comportamiento === 'neurotipico').length;
+            const neurodivergente = peques.filter(p => p.comportamiento === 'neurodivergente').length;
+            
+            document.getElementById('totalPeques').textContent = total;
+            document.getElementById('neurotipicoCount').textContent = neurotipico;
+            document.getElementById('neurodivergenteCount').textContent = neurodivergente;
+        }
+
+        function filterPeques() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (searchTerm === '') {
+                displayPeques(allPeques);
+                updateStats(allPeques);
+                return;
+            }
+            
+            const filtered = allPeques.filter(peque => 
+                peque.nombreCompleto.toLowerCase().includes(searchTerm) ||
+                peque.nombreTutor.toLowerCase().includes(searchTerm) ||
+                peque.comportamiento.toLowerCase().includes(searchTerm) ||
+                peque.celularTutor.includes(searchTerm)
+            );
+            
+            displayPeques(filtered);
+            updateStats(filtered);
+        }
+
+        function viewPeque(id) {
+            window.location.href = `verN.html?id=${id}`;
+        }
+
+        async function deletePeque(id, nombre) {
+            if (!confirm(`¿Está seguro de que desea eliminar a "${nombre}"?\n\nEsta acción no se puede deshacer.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/peques/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(`${data.message}`);
+                    loadPeques();
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error eliminando peque:', error);
+                alert('Error al conectar con el servidor');
+            }
+        }
+
+        function editPeque(id) {
+            window.location.href = `editarN.html?id=${id}`;
+        }
+
+        function refreshData() {
+            document.getElementById('searchInput').value = '';
+            loadPeques();
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            loading.style.display = show ? 'flex' : 'none';
+        }
+
+        function showError(message) {
+            const container = document.querySelector('.table-container');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>❌ Error</h3>
+                    <p>${message}</p>
+                    <button class="btn btn-primary" onclick="loadPeques()">
+                        🔄 Reintentar
+                    </button>
+                </div>
+            `;
+        }
+
+        function formatPhone(phone) {
+            if (phone && phone.length === 10) {
+                return `(${phone.slice(0, 3)}) ${phone.slice(3, 6)}-${phone.slice(6)}`;
+            }
+            return phone;
+        }
+
+        function formatPaymentDate(fechaPago) {
+            if (!fechaPago) return '-';
+            return `Día ${fechaPago}`;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-MX', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+    </script>
+</body>
+</html>

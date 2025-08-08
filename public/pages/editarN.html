@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Niño</title>
+    <link rel="stylesheet" href="../styles/stylesEditarN.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="edit-container">
+            <div class="edit-header">
+                <h1>Editar Información</h1>
+                <p>Modifica los datos del niño registrado</p>
+            </div>
+
+            <div id="loadingEdit" class="loading-edit">
+                <div class="loading-spinner" style="margin: 0 auto 15px;"></div>
+                <p>Cargando información para editar...</p>
+            </div>
+
+            <div id="errorEdit" class="error-edit" style="display: none;">
+                <h3>Error</h3>
+                <p id="errorEditMessage">No se pudo cargar la información</p>
+                <button class="btn btn-primary" onclick="retryLoad()">
+                    Reintentar
+                </button>
+            </div>
+
+            <div id="editContent" style="display: none;">
+                <form class="edit-form" id="editForm">
+                    <a href="javascript:history.back()" class="back-link">
+                        ← Volver a detalles
+                    </a>
+
+                    <div class="success-message" id="successMessage">
+                        La información se actualizó correctamente
+                    </div>
+
+                    <h3 style="color: #495057; margin-bottom: 20px; border-bottom: 2px solid #ffc107; padding-bottom: 10px;">
+                        Información Personal
+                    </h3>
+
+                    <div class="form-group">
+                        <label class="form-label" for="nombreCompleto">Nombre Completo *</label>
+                        <input type="text" class="form-control" id="nombreCompleto" name="nombreCompleto" required>
+                        <div class="invalid-feedback">El nombre completo es obligatorio</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="edad">Edad *</label>
+                        <input type="number" class="form-control" id="edad" name="edad" min="1" max="18" required>
+                        <div class="invalid-feedback">La edad debe ser entre 1 y 18 años</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="comportamiento">Diagnóstico *</label>
+                        <select class="form-control form-select" id="comportamiento" name="comportamiento" required>
+                            <option value="">Seleccionar diagnóstico</option>
+                            <option value="neurotipico">Neurotípico</option>
+                            <option value="neurodivergente">Neurodivergente</option>
+                        </select>
+                        <div class="invalid-feedback">Selecciona un tipo de diagnóstico</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="caracteristicas">Características Especiales</label>
+                        <textarea class="form-control" id="caracteristicas" name="caracteristicas" rows="4" 
+                                  placeholder="Describe características especiales, necesidades, alergias, etc. (opcional)"></textarea>
+                    </div>
+
+                    <h3 style="color: #495057; margin: 30px 0 20px 0; border-bottom: 2px solid #ffc107; padding-bottom: 10px;">
+                        👨‍👩‍👧‍👦 Información del Tutor
+                    </h3>
+
+                    <div class="form-group">
+                        <label class="form-label" for="nombreTutor">Nombre del Tutor *</label>
+                        <input type="text" class="form-control" id="nombreTutor" name="nombreTutor" required>
+                        <div class="invalid-feedback">El nombre del tutor es obligatorio</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="celularTutor">Celular del Tutor *</label>
+                        <input type="tel" class="form-control" id="celularTutor" name="celularTutor" 
+                               pattern="[0-9]{10}" maxlength="10" 
+                               placeholder="Ej: 9611234567" required>
+                        <div class="invalid-feedback">El celular debe tener exactamente 10 dígitos</div>
+                    </div>
+
+                    <!-- NUEVO CAMPO: Fecha de Pago -->
+                    <div class="form-group">
+                        <label class="form-label" for="fechaPago">Fecha de Pago *</label>
+                        <select class="form-control form-select" id="fechaPago" name="fechaPago" required>
+                            <option value="">Seleccionar día del mes</option>
+                            <option value="1">Día 1</option>
+                            <option value="2">Día 2</option>
+                            <option value="3">Día 3</option>
+                            <option value="4">Día 4</option>
+                            <option value="5">Día 5</option>
+                            <option value="6">Día 6</option>
+                            <option value="7">Día 7</option>
+                            <option value="8">Día 8</option>
+                            <option value="9">Día 9</option>
+                            <option value="10">Día 10</option>
+                            <option value="11">Día 11</option>
+                            <option value="12">Día 12</option>
+                            <option value="13">Día 13</option>
+                            <option value="14">Día 14</option>
+                            <option value="15">Día 15</option>
+                            <option value="16">Día 16</option>
+                            <option value="17">Día 17</option>
+                            <option value="18">Día 18</option>
+                            <option value="19">Día 19</option>
+                            <option value="20">Día 20</option>
+                            <option value="21">Día 21</option>
+                            <option value="22">Día 22</option>
+                            <option value="23">Día 23</option>
+                            <option value="24">Día 24</option>
+                            <option value="25">Día 25</option>
+                            <option value="26">Día 26</option>
+                            <option value="27">Día 27</option>
+                            <option value="28">Día 28</option>
+                            <option value="29">Día 29</option>
+                            <option value="30">Día 30</option>
+                            <option value="31">Día 31</option>
+                        </select>
+                        <div class="invalid-feedback">Selecciona el día de pago mensual</div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="cancelarEdicion()">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-warning" id="submitBtn">
+                            Guardar Cambios
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPeque = null;
+        let pequeId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            pequeId = urlParams.get('id');
+            
+            if (pequeId) {
+                loadPequeForEdit(pequeId);
+            } else {
+                showError('No se especificó un ID de niño válido');
+            }
+
+            document.getElementById('editForm').addEventListener('submit', handleSubmit);
+            
+            document.getElementById('celularTutor').addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '').substring(0, 10);
+            });
+        });
+
+        async function loadPequeForEdit(id) {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/peques/${id}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('El niño solicitado no fue encontrado');
+                    }
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const peque = await response.json();
+                currentPeque = peque;
+                fillForm(peque);
+                showContent();
+                
+            } catch (error) {
+                console.error('Error cargando datos para edición:', error);
+                showError(error.message);
+            }
+        }
+
+        function fillForm(peque) {
+            document.getElementById('nombreCompleto').value = peque.nombreCompleto || '';
+            document.getElementById('edad').value = peque.edad || '';
+            document.getElementById('comportamiento').value = peque.comportamiento || '';
+            document.getElementById('caracteristicas').value = peque.caracteristicas || '';
+            document.getElementById('nombreTutor').value = peque.nombreTutor || '';
+            document.getElementById('celularTutor').value = peque.celularTutor || '';
+            document.getElementById('fechaPago').value = peque.fechaPago || '';
+
+            document.title = `Editar - ${peque.nombreCompleto}`;
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Guardando...';
+
+            try {
+                const formData = {
+                    nombreCompleto: document.getElementById('nombreCompleto').value.trim(),
+                    edad: parseInt(document.getElementById('edad').value),
+                    comportamiento: document.getElementById('comportamiento').value,
+                    caracteristicas: document.getElementById('caracteristicas').value.trim(),
+                    nombreTutor: document.getElementById('nombreTutor').value.trim(),
+                    celularTutor: document.getElementById('celularTutor').value.trim(),
+                    fechaPago: parseInt(document.getElementById('fechaPago').value)
+                };
+
+                const response = await fetch(`http://localhost:5000/api/peques/${pequeId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showSuccessMessage();
+                    currentPeque = { ...currentPeque, ...formData };
+                    
+                    setTimeout(() => {
+                        window.location.href = `verN.html?id=${pequeId}`;
+                    }, 2000);
+                } else {
+                    alert(`Error al actualizar: ${result.error}`);
+                }
+
+            } catch (error) {
+                console.error('Error actualizando:', error);
+                alert('Error al conectar con el servidor');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+            const fields = ['nombreCompleto', 'edad', 'comportamiento', 'nombreTutor', 'celularTutor', 'fechaPago'];
+            
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                field.classList.remove('is-invalid');
+            });
+
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                }
+            });
+
+            const edad = document.getElementById('edad');
+            if (edad.value && (edad.value < 1 || edad.value > 18)) {
+                edad.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            const celular = document.getElementById('celularTutor');
+            if (celular.value && celular.value.length !== 10) {
+                celular.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showSuccessMessage() {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.style.display = 'block';
+            successMsg.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelarEdicion() {
+            if (confirm('¿Seguro que deseas cancelar? Los cambios no guardados se perderán.')) {
+                history.back();
+            }
+        }
+
+        function retryLoad() {
+            if (pequeId) {
+                loadPequeForEdit(pequeId);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingEdit').style.display = show ? 'block' : 'none';
+            document.getElementById('editContent').style.display = show ? 'none' : 'block';
+            document.getElementById('errorEdit').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('errorEditMessage').textContent = message;
+            document.getElementById('loadingEdit').style.display = 'none';
+            document.getElementById('editContent').style.display = 'none';
+            document.getElementById('errorEdit').style.display = 'block';
+        }
+
+        function showContent() {
+            document.getElementById('loadingEdit').style.display = 'none';
+            document.getElementById('errorEdit').style.display = 'none';
+            document.getElementById('editContent').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

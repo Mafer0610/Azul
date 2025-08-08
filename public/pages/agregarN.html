@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar Niño</title>
+    <link rel="stylesheet" href="../styles/stylesAgregarN.css" />
+</head>
+<body>
+    <a href="infant.html" class="back-link">← Volver</a>
+    
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <h1>Nuevo Niño</h1>
+                <p>Complete la información del niño para su registro</p>
+            </div>
+            
+            <div id="messageContainer"></div>
+            
+            <form id="pequeForm" class="form-grid">
+                <div class="form-group">
+                    <label for="nombreCompleto">Nombre Completo *</label>
+                    <input type="text" id="nombreCompleto" name="nombreCompleto" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edad">Edad *</label>
+                    <input type="text" id="edad" name="edad" required>
+                </div>
+                
+                <div class="form-group-full">
+                    <label>Diagnóstico *</label>
+                    <div class="behavioral-options">
+                        <div class="radio-option">
+                            <input type="radio" id="neurotipico" name="comportamiento" value="neurotipico" required>
+                            <label for="neurotipico">Neurotípico</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="neurodivergente" name="comportamiento" value="neurodivergente" required>
+                            <label for="neurodivergente">Neurodivergente</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group-full">
+                    <label for="caracteristicas">Características</label><br>
+                    <textarea id="caracteristicas" name="caracteristicas" placeholder="Describe características especiales, necesidades, alergias, etc. (opcional)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="nombreTutor">Nombre del Tutor *</label>
+                    <input type="text" id="nombreTutor" name="nombreTutor" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="celularTutor">Celular del Tutor *</label>
+                    <input type="tel" id="celularTutor" name="celularTutor" required
+                            pattern="[0-9]{10}" placeholder="Ej: 9611234567" maxlength="10">
+                </div>
+                
+                <!-- NUEVO CAMPO: Fecha de Pago -->
+                <div class="form-group">
+                    <label for="fechaPago">Fecha de Pago *</label>
+                    <select id="fechaPago" name="fechaPago" required>
+                        <option value="">Seleccionar día del mes</option>
+                        <option value="1">Día 1</option>
+                        <option value="2">Día 2</option>
+                        <option value="3">Día 3</option>
+                        <option value="4">Día 4</option>
+                        <option value="5">Día 5</option>
+                        <option value="6">Día 6</option>
+                        <option value="7">Día 7</option>
+                        <option value="8">Día 8</option>
+                        <option value="9">Día 9</option>
+                        <option value="10">Día 10</option>
+                        <option value="11">Día 11</option>
+                        <option value="12">Día 12</option>
+                        <option value="13">Día 13</option>
+                        <option value="14">Día 14</option>
+                        <option value="15">Día 15</option>
+                        <option value="16">Día 16</option>
+                        <option value="17">Día 17</option>
+                        <option value="18">Día 18</option>
+                        <option value="19">Día 19</option>
+                        <option value="20">Día 20</option>
+                        <option value="21">Día 21</option>
+                        <option value="22">Día 22</option>
+                        <option value="23">Día 23</option>
+                        <option value="24">Día 24</option>
+                        <option value="25">Día 25</option>
+                        <option value="26">Día 26</option>
+                        <option value="27">Día 27</option>
+                        <option value="28">Día 28</option>
+                        <option value="29">Día 29</option>
+                        <option value="30">Día 30</option>
+                        <option value="31">Día 31</option>
+                    </select>
+                </div>
+
+                <!-- Campo vacío para mantener la estructura del grid -->
+                <div class="form-group"></div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cancelarRegistro()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        Registrar Niño
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="../controllers/peque.js"></script>
+</body>
+</html>

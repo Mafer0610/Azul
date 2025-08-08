@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Maestro</title>
+    <link rel="stylesheet" href="../styles/stylesAgregarM.css" />
+</head>
+<body>
+    <a href="master.html" class="back-link">← Volver</a>
+    
+    <div class="container">
+        <div class="form-container">
+            <div class="form-header">
+                <h1>Editar Maestro</h1>
+                <p>Modifique la información del maestro</p>
+            </div>
+            
+            <div id="messageContainer"></div>
+            
+            <form id="editMaestroForm" class="form-grid">
+                <div class="form-group">
+                    <label for="nombreCompleto">Nombre Completo *</label>
+                    <input type="text" id="nombreCompleto" name="nombreCompleto" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edad">Edad *</label>
+                    <input type="text" id="edad" name="edad" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="celular">No. Celular *</label>
+                    <input type="tel" id="celular" name="celular" required pattern="[0-9]{10}">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="cancelarEdicion()">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        Actualizar Maestro
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Obtener el ID del maestro de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const maestroId = urlParams.get('id');
+        
+        if (!maestroId) {
+            alert('ID de maestro no válido');
+            window.location.href = 'master.html';
+        }
+        
+        // Cargar los datos del maestro al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarDatosMaestro();
+        });
+        
+        async function cargarDatosMaestro() {
+            try {
+                const response = await fetch(`http://localhost:5000/api/maestros/${maestroId}`);
+                
+                if (!response.ok) {
+                    throw new Error('Maestro no encontrado');
+                }
+                
+                const maestro = await response.json();
+                
+                // Llenar el formulario con los datos actuales
+                document.getElementById('nombreCompleto').value = maestro.nombreCompleto;
+                document.getElementById('edad').value = maestro.edad;
+                document.getElementById('celular').value = maestro.celular;
+                
+            } catch (error) {
+                console.error('Error cargando maestro:', error);
+                alert('Error al cargar los datos del maestro');
+                window.location.href = 'master.html';
+            }
+        }
+        
+        // Manejar el envío del formulario
+        document.getElementById('editMaestroForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nombreCompleto = document.getElementById('nombreCompleto').value.trim();
+            const edad = document.getElementById('edad').value.trim();
+            const celular = document.getElementById('celular').value.trim();
+            
+            // Validaciones básicas
+            if (!nombreCompleto || !edad || !celular) {
+                alert('Por favor complete todos los campos');
+                return;
+            }
+            
+            if (!/^\d{10}$/.test(celular)) {
+                alert('El celular debe tener exactamente 10 dígitos');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span> Actualizando...';
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/maestros/${maestroId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombreCompleto, edad, celular })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('✅ ' + data.message);
+                    window.location.href = 'master.html';
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error actualizando maestro:', error);
+                alert('❌ Error al conectar con el servidor');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Actualizar Maestro';
+            }
+        });
+        
+        function cancelarEdicion() {
+            if (confirm('¿Está seguro de que desea cancelar la edición?')) {
+                window.location.href = 'master.html';
+            }
+        }
+        
+        // Validación en tiempo real del celular
+        document.getElementById('celular').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 10) {
+                value = value.slice(0, 10);
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>

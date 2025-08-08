@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalles del Niño</title>
+    <link rel="stylesheet" href="../styles/stylesVerN.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="detail-container">
+            <div class="detail-header">
+                <h1>Detalles del Niño</h1>
+                <p>Información completa del registro</p>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingDetail" class="loading-detail">
+                <div class="loading-spinner" style="margin: 0 auto 15px;"></div>
+                <p>Cargando información...</p>
+            </div>
+
+            <!-- Error State -->
+            <div id="errorDetail" class="error-detail" style="display: none;">
+                <h3>❌ Error</h3>
+                <p id="errorMessage">No se pudo cargar la información del niño</p>
+                <button class="btn btn-primary" onclick="retryLoad()">
+                    🔄 Reintentar
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div id="detailContent" style="display: none;">
+                <div class="detail-content">
+                    <a href="javascript:history.back()" class="back-link">
+                        ← Volver a la lista
+                    </a>
+
+                    <!-- Información Personal -->
+                    <div class="detail-section">
+                        <h3>👤 Información Personal</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">Nombre Completo:</span>
+                            <span class="detail-value highlight" id="nombreCompleto">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Edad:</span>
+                            <span class="detail-value" id="edad">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Diagnóstico:</span>
+                            <span class="detail-value" id="comportamiento">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Información del Tutor -->
+                    <div class="detail-section">
+                        <h3>Información del Tutor</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">Nombre del Tutor:</span>
+                            <span class="detail-value highlight" id="nombreTutor">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Celular:</span>
+                            <span class="detail-value" id="celularTutor">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Fecha de Pago:</span>
+                            <span class="detail-value" id="fechaPago">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Características Especiales -->
+                    <div class="detail-section">
+                        <h3>📝 Características Especiales</h3>
+                        <div class="caracteristicas-box" id="caracteristicas">
+                            Sin características especiales registradas.
+                        </div>
+                    </div>
+
+                    <!-- Información del Sistema -->
+                    <div class="detail-section">
+                        <h3>ℹ️ Información del Sistema</h3>
+                        <div class="detail-row">
+                            <span class="detail-label">Fecha de Registro:</span>
+                            <span class="detail-value" id="fechaRegistro">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">ID del Sistema:</span>
+                            <span class="detail-value" id="idSistema">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Estado:</span>
+                            <span class="detail-value" id="estado">Activo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Acciones -->
+                <div class="actions-section">
+                    <button class="btn btn-warning" onclick="editarPeque()">
+                        ✏️ Editar Información
+                    </button>
+                    <button class="btn btn-danger" onclick="eliminarPeque()">
+                        🗑️ Eliminar Registro
+                    </button>
+                    <button class="btn btn-success" onclick="contactarTutor()">
+                        📞 Contactar Tutor
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPeque = null;
+        let pequeId = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Obtener el ID del parámetro URL
+            const urlParams = new URLSearchParams(window.location.search);
+            pequeId = urlParams.get('id');
+            
+            if (pequeId) {
+                loadPequeDetails(pequeId);
+            } else {
+                showError('No se especificó un ID de niño válido');
+            }
+        });
+
+        async function loadPequeDetails(id) {
+            showLoading(true);
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/peques/${id}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('El niño solicitado no fue encontrado');
+                    }
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
+                const peque = await response.json();
+                currentPeque = peque;
+                displayPequeDetails(peque);
+                
+            } catch (error) {
+                console.error('Error cargando detalles:', error);
+                showError(error.message);
+            }
+        }
+
+        function displayPequeDetails(peque) {
+            // Información Personal
+            document.getElementById('nombreCompleto').textContent = peque.nombreCompleto || '-';
+            document.getElementById('edad').textContent = peque.edad ? `${peque.edad} años` : '-';
+            
+            // Comportamiento con badge
+            const comportamientoEl = document.getElementById('comportamiento');
+            if (peque.comportamiento) {
+                comportamientoEl.innerHTML = `<span class="badge badge-${peque.comportamiento}">${peque.comportamiento}</span>`;
+            } else {
+                comportamientoEl.textContent = '-';
+            }
+
+            // Información del Tutor
+            document.getElementById('nombreTutor').textContent = peque.nombreTutor || '-';
+            document.getElementById('celularTutor').textContent = formatPhone(peque.celularTutor) || '-';
+            
+            // Fecha de Pago
+            document.getElementById('fechaPago').textContent = peque.fechaPago ? `Día ${peque.fechaPago}` : '-';
+
+            // Características
+            const caracteristicasEl = document.getElementById('caracteristicas');
+            if (peque.caracteristicas && peque.caracteristicas.trim()) {
+                caracteristicasEl.textContent = peque.caracteristicas;
+            } else {
+                caracteristicasEl.textContent = 'Sin características especiales registradas.';
+                caracteristicasEl.style.fontStyle = 'italic';
+                caracteristicasEl.style.color = '#6c757d';
+            }
+
+            // Información del Sistema
+            document.getElementById('fechaRegistro').textContent = formatDate(peque.createdAt || peque.fechaRegistro);
+            document.getElementById('idSistema').textContent = peque._id || '-';
+            document.getElementById('estado').innerHTML = '<span class="badge badge-neurotipico">Activo</span>';
+
+            // Actualizar título de la página
+            document.title = `Detalles - ${peque.nombreCompleto}`;
+
+            showContent();
+        }
+
+        function editarPeque() {
+            if (currentPeque) {
+                // Redirigir a la página de edición con el ID del peque
+                window.location.href = `editarN.html?id=${currentPeque._id}`;
+            } else {
+                alert('❌ No hay información del niño para editar');
+            }
+        }
+
+        async function eliminarPeque() {
+            if (!currentPeque) return;
+            
+            const confirmMessage = `¿Está seguro de que desea eliminar el registro de "${currentPeque.nombreCompleto}"?\n\nEsta acción no se puede deshacer y eliminará toda la información asociada.`;
+            
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:5000/api/peques/${currentPeque._id}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(`✅ ${data.message}`);
+                    window.location.href = 'infant.html';
+                } else {
+                    alert(`❌ Error: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Error eliminando peque:', error);
+                alert('❌ Error al conectar con el servidor');
+            }
+        }
+
+        function contactarTutor() {
+            if (currentPeque && currentPeque.celularTutor) {
+                const phone = currentPeque.celularTutor.replace(/\D/g, '');
+                const message = encodeURIComponent(`Hola ${currentPeque.nombreTutor}, me comunico con usted respecto a ${currentPeque.nombreCompleto}.`);
+                const whatsappUrl = `https://wa.me/52${phone}?text=${message}`;
+                window.open(whatsappUrl, '_blank');
+            } else {
+                alert('No hay número de celular registrado para este tutor');
+            }
+        }
+
+        function retryLoad() {
+            if (pequeId) {
+                loadPequeDetails(pequeId);
+            }
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingDetail').style.display = show ? 'block' : 'none';
+            document.getElementById('detailContent').style.display = show ? 'none' : 'block';
+            document.getElementById('errorDetail').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('loadingDetail').style.display = 'none';
+            document.getElementById('detailContent').style.display = 'none';
+            document.getElementById('errorDetail').style.display = 'block';
+        }
+
+        function showContent() {
+            document.getElementById('loadingDetail').style.display = 'none';
+            document.getElementById('errorDetail').style.display = 'none';
+            document.getElementById('detailContent').style.display = 'block';
+        }
+
+        function formatPhone(phone) {
+            if (phone && phone.length === 10) {
+                return `(${phone.slice(0, 3)}) ${phone.slice(3, 6)}-${phone.slice(6)}`;
+            }
+            return phone;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-MX', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    </script>
+</body>
+</html>

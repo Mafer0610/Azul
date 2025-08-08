@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda</title>
+    <link rel="stylesheet" href="../styles/stylesAdmin.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="menu-container">
+                <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()">
+                    ☰
+                </button>
+                <div class="menu-dropdown" id="menuDropdown">
+                    <a href="#" class="menu-item" onclick="infantes()">
+                        <span class="menu-item-icon">👶</span>
+                        Infantes
+                    </a>
+                    <a href="#" class="menu-item" onclick="masters()">
+                        <span class="menu-item-icon">👨‍🏫</span>
+                        Maestros
+                    </a>
+                    <a href="#" class="menu-item" onclick="irTienda()">
+                        <span class="menu-item-icon">🛒</span>
+                        Tienda
+                    </a>
+                    <a href="#" class="menu-item logout" onclick="cerrarSesion()">
+                        <span class="menu-item-icon">🚪</span>
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+            
+            <h1>Agenda Semanal</h1>
+            <div class="week-navigation">
+                <button class="nav-btn" id="prevWeek" onclick="agenda.cambiarSemana(-1)">‹</button>
+                <div class="week-indicator" id="weekIndicator">Semana Actual</div>
+                <button class="nav-btn" id="nextWeek" onclick="agenda.cambiarSemana(1)">›</button>
+            </div>
+        </div>
+        
+        <div class="connection-status loading" id="connectionStatus">
+            <span class="loading-spinner"></span> Conectando...
+        </div>
+        
+        <div class="calendar-container">
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+    </div>
+
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Agregar Evento</h2>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+            <form id="eventForm">
+                <div class="form-group">
+                    <label for="eventTime">Hora:</label>
+                    <input type="time" id="eventTime" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="nombreNino">Nombre del Niño:</label>
+                    <input type="text" id="nombreNino" list="sugerenciasNino" required>
+                    <datalist id="sugerenciasNino"></datalist>
+                </div>
+
+                <div class="form-group">
+                    <label for="clase">Clase:</label>
+                    <select id="clase" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="CEMS">CEMS</option>
+                        <option value="AI">AI</option>
+                        <option value="OCUPACIONAL">OCUPACIONAL</option>
+                        <option value="BABY SPA">BABY SPA</option>
+                        <option value="CANCELAR">CANCELAR</option>
+                        <option value="MUESTRA">MUESTRA</option>
+                        <option value="REPOSICIÓN">REPOSICIÓN</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="maestro">Maestro:</label>
+                    <select id="maestro" required>
+                        <option value="">-- Seleccionar --</option>
+                        <!-- Se llenará dinámicamente desde la base de datos -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="caracteristicasNino">Características:</label>
+                    <textarea id="caracteristicasNino" placeholder="Características del niño..." readonly></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="nombreTutor">Nombre del Tutor:</label>
+                    <input type="text" id="nombreTutor" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="celularTutor">No. Celular del Tutor:</label>
+                    <input type="tel" id="celularTutor" readonly>
+                </div>
+
+                <div class="modal-buttons">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="saveBtn">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="../controllers/admin.js"></script>
+</body>
+</html>

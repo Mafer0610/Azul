@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda</title>
+    <link rel="stylesheet" href="../styles/stylesAdmin.css" />
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="menu-container">
+                <button class="menu-toggle" id="menuToggle" onclick="toggleMenu()">
+                    ☰
+                </button>
+                <div class="menu-dropdown" id="menuDropdown">
+                    <a href="#" class="menu-item logout" onclick="cerrarSesion()">
+                        <span class="menu-item-icon">🚪</span>
+                        Cerrar Sesión
+                    </a>
+                </div>
+            </div>
+                     
+            <h1>Agenda Semanal</h1>
+            <div class="week-navigation">
+                <button class="nav-btn" id="prevWeek" onclick="agenda.cambiarSemana(-1)">‹</button>
+                <div class="week-indicator" id="weekIndicator">Semana Actual</div>
+                <button class="nav-btn" id="nextWeek" onclick="agenda.cambiarSemana(1)">›</button>
+            </div>
+        </div>
+                 
+        <!-- Estado de conexión movido abajo a la derecha -->
+        <div class="connection-status loading" id="connectionStatus">
+            <span class="loading-spinner"></span> Conectando...
+        </div>
+                 
+        <div class="calendar-container">
+            <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
+    </div>
+
+    <script src="../controllers/Fuser.js"></script>
+</body>
+</html>

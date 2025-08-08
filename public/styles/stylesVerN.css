@@ -1,0 +1,139 @@
+.detail-container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.detail-header {
+    background: linear-gradient(135deg, #DCEAF2 0%, #0BADBF 50%, #586BA6 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.detail-header h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+.detail-content {
+    padding: 30px;
+}
+
+.detail-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid #667eea;
+}
+
+.detail-section h3 {
+    color: #495057;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #495057;
+    min-width: 150px;
+}
+
+.detail-value {
+    color: #6c757d;
+    text-align: right;
+    flex: 1;
+}
+
+.detail-value.highlight {
+    font-weight: 600;
+    color: #495057;
+}
+
+.caracteristicas-box {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 100px;
+    color: #495057;
+    line-height: 1.6;
+}
+
+.actions-section {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+    text-align: center;
+}
+
+.actions-section .btn {
+    margin: 0 10px;
+}
+
+.loading-detail {
+    text-align: center;
+    padding: 100px 20px;
+    color: #6c757d;
+}
+
+.error-detail {
+    text-align: center;
+    padding: 100px 20px;
+    color: #dc3545;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 500;
+    margin-bottom: 20px;
+    transition: color 0.3s;
+}
+
+.back-link:hover {
+    color: #495057;
+}
+
+@media (max-width: 768px) {
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .detail-label {
+        min-width: auto;
+    }
+
+    .detail-value {
+        text-align: left;
+    }
+
+    .actions-section .btn {
+        display: block;
+        margin: 10px 0;
+    }
+}
