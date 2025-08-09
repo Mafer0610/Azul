@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Producto</title>
-    <link rel="stylesheet" href="../styles/stylesEditarN.css" />
+    <link rel="stylesheet" href="../styles/stylesEditarProducto.css" />
     <script>
-        // Script de autenticación igual al de otros archivos
         (function() {
             function checkAuth() {
                 const isAuthenticated = localStorage.getItem('isAuthenticated');
@@ -89,42 +88,17 @@
                         <div class="invalid-feedback">El precio es obligatorio y debe ser mayor a 0</div>
                     </div>
 
-                    <div class="form-group">
-                        <label class="form-label" for="categoria">Categoría</label>
-                        <select class="form-control form-select" id="categoria" name="categoria">
-                            <option value="">Seleccionar categoría</option>
-                            <option value="juguetes">Juguetes</option>
-                            <option value="ropa">Ropa</option>
-                            <option value="accesorios">Accesorios</option>
-                            <option value="cuidado">Cuidado Personal</option>
-                            <option value="alimentacion">Alimentación</option>
-                            <option value="otros">Otros</option>
-                        </select>
-                        <div class="invalid-feedback">Selecciona una categoría</div>
-                    </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="stock">Stock Disponible</label>
-                        <input type="number" class="form-control" id="stock" name="stock" min="0" placeholder="0">
-                        <div class="invalid-feedback">El stock debe ser un número positivo</div>
+                        <label class="form-label" for="cantidad">Cantidad Disponible</label>
+                        <input type="number" class="form-control" id="cantidad" name="cantidad" min="0" placeholder="0">
+                        <div class="invalid-feedback">La cantidad debe ser un número positivo</div>
                     </div>
 
                     <div class="form-group" style="grid-column: 1 / -1;">
-                        <label class="form-label" for="descripcion">Descripción</label>
-                        <textarea class="form-control" id="descripcion" name="descripcion" rows="4" 
+                        <label class="form-label" for="caracteristicas">Características</label>
+                        <textarea class="form-control" id="caracteristicas" name="caracteristicas" rows="4" 
                                   placeholder="Describe el producto (opcional)"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="marca">Marca</label>
-                        <input type="text" class="form-control" id="marca" name="marca" placeholder="Marca del producto">
-                        <div class="invalid-feedback">La marca no puede estar vacía si se proporciona</div>
-                    </div>
-
-                    <div class="form-group">
-                        <label class="form-label" for="codigo">Código del Producto</label>
-                        <input type="text" class="form-control" id="codigo" name="codigo" placeholder="SKU o código">
-                        <div class="invalid-feedback">El código no puede estar vacío si se proporciona</div>
                     </div>
 
                     <div class="form-actions">
@@ -184,11 +158,8 @@
         function fillForm(producto) {
             document.getElementById('nombre').value = producto.nombre || '';
             document.getElementById('precio').value = producto.precio || '';
-            document.getElementById('categoria').value = producto.categoria || '';
-            document.getElementById('stock').value = producto.stock || '';
-            document.getElementById('descripcion').value = producto.descripcion || '';
-            document.getElementById('marca').value = producto.marca || '';
-            document.getElementById('codigo').value = producto.codigo || '';
+            document.getElementById('cantidad').value = producto.cantidad || '';
+            document.getElementById('caracteristicas').value = producto.caracteristicas || '';
 
             document.title = `Editar - ${producto.nombre}`;
         }
@@ -211,21 +182,11 @@
                     precio: parseFloat(document.getElementById('precio').value)
                 };
 
-                // Solo agregar campos si tienen valor
-                const categoria = document.getElementById('categoria').value;
-                if (categoria) formData.categoria = categoria;
+                const cantidad = document.getElementById('cantidad').value;
+                if (cantidad) formData.cantidad = parseInt(cantidad);
 
-                const stock = document.getElementById('stock').value;
-                if (stock) formData.stock = parseInt(stock);
-
-                const descripcion = document.getElementById('descripcion').value.trim();
-                if (descripcion) formData.descripcion = descripcion;
-
-                const marca = document.getElementById('marca').value.trim();
-                if (marca) formData.marca = marca;
-
-                const codigo = document.getElementById('codigo').value.trim();
-                if (codigo) formData.codigo = codigo;
+                const caracteristicas = document.getElementById('caracteristicas').value.trim();
+                if (caracteristicas) formData.caracteristicas = caracteristicas;
 
                 const response = await fetch(`http://localhost:5000/api/productos/${productoId}`, {
                     method: 'PUT',
@@ -242,7 +203,7 @@
                     currentProducto = { ...currentProducto, ...formData };
                     
                     setTimeout(() => {
-                        window.location.href = 'tienda.html'; // Ajustar según tu archivo de tienda
+                        window.location.href = 'tienda.html';
                     }, 2000);
                 } else {
                     alert(`Error al actualizar: ${result.error}`);
@@ -260,7 +221,6 @@
         function validateForm() {
             let isValid = true;
             
-            // Validar nombre como obligatorio
             const nombre = document.getElementById('nombre');
             nombre.classList.remove('is-invalid');
             if (!nombre.value.trim()) {
@@ -268,7 +228,6 @@
                 isValid = false;
             }
 
-            // Validar precio como obligatorio
             const precio = document.getElementById('precio');
             precio.classList.remove('is-invalid');
             if (!precio.value || parseFloat(precio.value) <= 0) {
@@ -276,11 +235,10 @@
                 isValid = false;
             }
 
-            // Validar stock si se proporciona
-            const stock = document.getElementById('stock');
-            stock.classList.remove('is-invalid');
-            if (stock.value && parseInt(stock.value) < 0) {
-                stock.classList.add('is-invalid');
+            const cantidad = document.getElementById('cantidad');
+            cantidad.classList.remove('is-invalid');
+            if (cantidad.value && parseInt(cantidad.value) < 0) {
+                cantidad.classList.add('is-invalid');
                 isValid = false;
             }
 

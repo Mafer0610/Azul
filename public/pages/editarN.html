@@ -167,10 +167,9 @@
                     </div>
 
                     <h3 style="color: #495057; margin: 30px 0 20px 0; border-bottom: 2px solid #ffc107; padding-bottom: 10px;">
-                        👨‍👩‍👧‍👦 Información de Tutores
+                        Información de Tutores
                     </h3>
 
-                    <!-- Tutor 1 -->
                     <h4 style="color: #495057; margin: 20px 0 10px 0;">Tutor 1</h4>
                     <div class="form-group">
                         <label class="form-label" for="nombreTutor1">Nombre del Tutor 1</label>
@@ -193,7 +192,6 @@
                         <div class="invalid-feedback">El correo electrónico debe ser válido</div>
                     </div>
 
-                    <!-- Tutor 2 -->
                     <h4 style="color: #495057; margin: 20px 0 10px 0;">Tutor 2</h4>
                     <div class="form-group">
                         <label class="form-label" for="nombreTutor2">Nombre del Tutor 2</label>
@@ -308,7 +306,6 @@
 
             document.getElementById('editForm').addEventListener('submit', handleSubmit);
             
-            // Event listeners para validar celulares
             document.getElementById('celularTutor1').addEventListener('input', function(e) {
                 e.target.value = e.target.value.replace(/\D/g, '').substring(0, 10);
             });
@@ -355,7 +352,6 @@
         function fillForm(peque) {
             document.getElementById('nombreCompleto').value = peque.nombreCompleto || '';
             
-            // Formatear fecha de nacimiento para el input date
             if (peque.fechaNacimiento) {
                 const fecha = new Date(peque.fechaNacimiento);
                 const fechaFormatted = fecha.toISOString().split('T')[0];
@@ -366,7 +362,6 @@
             document.getElementById('comportamiento').value = peque.comportamiento || '';
             document.getElementById('tipoSangre').value = peque.tipoSangre || '';
             
-            // Marcar servicios seleccionados
             if (peque.servicios && Array.isArray(peque.servicios)) {
                 const checkboxes = document.querySelectorAll('input[name="servicios"]');
                 checkboxes.forEach(checkbox => {
@@ -377,7 +372,6 @@
             document.getElementById('caracteristicas').value = peque.caracteristicas || '';
             document.getElementById('alergias').value = peque.alergias || '';
             
-            // Llenar información de tutores
             document.getElementById('nombreTutor1').value = peque.nombreTutor1 || peque.nombreTutor || '';
             document.getElementById('celularTutor1').value = peque.celularTutor1 || peque.celularTutor || '';
             document.getElementById('correoTutor1').value = peque.correoTutor1 || peque.correoTutor || '';
@@ -390,7 +384,7 @@
             document.title = `Editar - ${peque.nombreCompleto}`;
         }
 
-        async function handleSubmit(event) {
+async function handleSubmit(event) {
             event.preventDefault();
             
             if (!validateForm()) {
@@ -403,7 +397,6 @@
             submitBtn.textContent = 'Guardando...';
 
             try {
-                // Obtener servicios seleccionados
                 const serviciosSeleccionados = [];
                 const checkboxes = document.querySelectorAll('input[name="servicios"]:checked');
                 checkboxes.forEach(checkbox => {
@@ -411,48 +404,23 @@
                 });
 
                 const formData = {
-                    nombreCompleto: document.getElementById('nombreCompleto').value.trim()
+                    nombreCompleto: document.getElementById('nombreCompleto').value.trim(),
+                    fechaNacimiento: document.getElementById('fechaNacimiento').value || null,
+                    comportamiento: document.getElementById('comportamiento').value || '',
+                    tipoSangre: document.getElementById('tipoSangre').value || '',
+                    servicios: serviciosSeleccionados,
+                    caracteristicas: document.getElementById('caracteristicas').value.trim(),
+                    alergias: document.getElementById('alergias').value.trim(),
+                    nombreTutor1: document.getElementById('nombreTutor1').value.trim(),
+                    celularTutor1: document.getElementById('celularTutor1').value.trim(),
+                    correoTutor1: document.getElementById('correoTutor1').value.trim(),
+                    nombreTutor2: document.getElementById('nombreTutor2').value.trim(),
+                    celularTutor2: document.getElementById('celularTutor2').value.trim(),
+                    correoTutor2: document.getElementById('correoTutor2').value.trim(),
+                    fechaPago: document.getElementById('fechaPago').value ? parseInt(document.getElementById('fechaPago').value) : null
                 };
 
-                // Solo agregar campos si tienen valor
-                const fechaNacimiento = document.getElementById('fechaNacimiento').value;
-                if (fechaNacimiento) formData.fechaNacimiento = fechaNacimiento;
-
-                const comportamiento = document.getElementById('comportamiento').value;
-                if (comportamiento) formData.comportamiento = comportamiento;
-
-                const tipoSangre = document.getElementById('tipoSangre').value.trim();
-                if (tipoSangre) formData.tipoSangre = tipoSangre;
-
-                formData.servicios = serviciosSeleccionados;
-
-                const caracteristicas = document.getElementById('caracteristicas').value.trim();
-                if (caracteristicas) formData.caracteristicas = caracteristicas;
-
-                const alergias = document.getElementById('alergias').value.trim();
-                if (alergias) formData.alergias = alergias;
-
-                // Tutores
-                const nombreTutor1 = document.getElementById('nombreTutor1').value.trim();
-                if (nombreTutor1) formData.nombreTutor1 = nombreTutor1;
-
-                const celularTutor1 = document.getElementById('celularTutor1').value.trim();
-                if (celularTutor1) formData.celularTutor1 = celularTutor1;
-
-                const correoTutor1 = document.getElementById('correoTutor1').value.trim();
-                if (correoTutor1) formData.correoTutor1 = correoTutor1;
-
-                const nombreTutor2 = document.getElementById('nombreTutor2').value.trim();
-                if (nombreTutor2) formData.nombreTutor2 = nombreTutor2;
-
-                const celularTutor2 = document.getElementById('celularTutor2').value.trim();
-                if (celularTutor2) formData.celularTutor2 = celularTutor2;
-
-                const correoTutor2 = document.getElementById('correoTutor2').value.trim();
-                if (correoTutor2) formData.correoTutor2 = correoTutor2;
-
-                const fechaPago = document.getElementById('fechaPago').value;
-                if (fechaPago) formData.fechaPago = parseInt(fechaPago);
+                console.log('Enviando datos:', formData);
 
                 const response = await fetch(`http://localhost:5000/api/peques/${pequeId}`, {
                     method: 'PUT',
@@ -487,7 +455,6 @@
         function validateForm() {
             let isValid = true;
             
-            // Solo validar nombre como obligatorio
             const nombreCompleto = document.getElementById('nombreCompleto');
             nombreCompleto.classList.remove('is-invalid');
 
@@ -496,7 +463,6 @@
                 isValid = false;
             }
 
-            // Validaciones opcionales - solo si tienen valor
             const celular1 = document.getElementById('celularTutor1');
             celular1.classList.remove('is-invalid');
             if (celular1.value && celular1.value.length !== 10) {

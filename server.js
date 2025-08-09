@@ -284,7 +284,7 @@ app.post('/api/peques', async (req, res) => {
     }
 });
 
-// Actualizar peque - ACTUALIZADO para dos tutores
+// Actualizar
 app.put('/api/peques/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -305,16 +305,18 @@ app.put('/api/peques/:id', async (req, res) => {
             fechaPago 
         } = req.body;
         
+        console.log('=== ACTUALIZANDO PEQUE ===');
+        console.log('ID:', id);
+        console.log('Datos recibidos:', req.body);
+        
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
             return res.status(400).json({ error: 'ID no válido' });
         }
         
-        // VALIDACIÓN MÍNIMA - Solo nombre es obligatorio
         if (!nombreCompleto || !nombreCompleto.trim()) {
             return res.status(400).json({ error: 'El nombre completo es obligatorio' });
         }
 
-        // Validar servicios solo si se proporcionan
         if (servicios && Array.isArray(servicios) && servicios.length > 0) {
             const serviciosInvalidos = servicios.filter(servicio => !serviciosPermitidos.includes(servicio));
             if (serviciosInvalidos.length > 0) {
@@ -324,7 +326,6 @@ app.put('/api/peques/:id', async (req, res) => {
             }
         }
 
-        // Validaciones opcionales
         if (celularTutor1 && !/^\d{10}$/.test(celularTutor1)) {
             return res.status(400).json({ error: 'El celular del tutor 1 debe tener exactamente 10 dígitos' });
         }
@@ -353,28 +354,24 @@ app.put('/api/peques/:id', async (req, res) => {
             }
         }
 
-        // Crear objeto de actualización con solo los campos que tienen valor
         const updateData = {
-            nombreCompleto: nombreCompleto.trim()
+            nombreCompleto: nombreCompleto.trim(),
+            fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+            comportamiento: comportamiento || '',
+            caracteristicas: caracteristicas || '',
+            tipoSangre: tipoSangre || '',
+            alergias: alergias || '',
+            servicios: servicios || [],
+            nombreTutor1: nombreTutor1 || '',
+            celularTutor1: celularTutor1 || '',
+            correoTutor1: correoTutor1 || '',
+            nombreTutor2: nombreTutor2 || '',
+            celularTutor2: celularTutor2 || '',
+            correoTutor2: correoTutor2 || '',
+            fechaPago: fechaPago ? parseInt(fechaPago) : null
         };
 
-        // Solo agregar campos si tienen valor
-        if (fechaNacimiento) updateData.fechaNacimiento = new Date(fechaNacimiento);
-        if (comportamiento !== undefined) updateData.comportamiento = comportamiento;
-        if (caracteristicas !== undefined) updateData.caracteristicas = caracteristicas.trim();
-        if (tipoSangre !== undefined) updateData.tipoSangre = tipoSangre.trim();
-        if (alergias !== undefined) updateData.alergias = alergias.trim();
-        if (servicios !== undefined) updateData.servicios = servicios;
-        
-        // Tutores
-        if (nombreTutor1 !== undefined) updateData.nombreTutor1 = nombreTutor1.trim();
-        if (celularTutor1 !== undefined) updateData.celularTutor1 = celularTutor1.trim();
-        if (correoTutor1 !== undefined) updateData.correoTutor1 = correoTutor1.trim();
-        if (nombreTutor2 !== undefined) updateData.nombreTutor2 = nombreTutor2.trim();
-        if (celularTutor2 !== undefined) updateData.celularTutor2 = celularTutor2.trim();
-        if (correoTutor2 !== undefined) updateData.correoTutor2 = correoTutor2.trim();
-        
-        if (fechaPago !== undefined) updateData.fechaPago = fechaPago ? parseInt(fechaPago) : null;
+        console.log('Datos para actualizar:', updateData);
 
         const updatedPeque = await Peque.findByIdAndUpdate(
             id,
@@ -386,19 +383,21 @@ app.put('/api/peques/:id', async (req, res) => {
             return res.status(404).json({ error: 'Niño no encontrado' });
         }
         
+        console.log('✅ Peque actualizado:', updatedPeque);
+        
         res.json({ 
             message: 'Información actualizada correctamente', 
             peque: updatedPeque 
         });
         
     } catch (error) {
-        console.error('Error actualizando peque:', error);
+        console.error('❌ Error actualizando peque:', error);
         
         if (error.name === 'ValidationError') {
             const messages = Object.values(error.errors).map(val => val.message);
             res.status(400).json({ error: messages.join(', ') });
         } else {
-            res.status(500).json({ error: 'Error del servidor' });
+            res.status(500).json({ error: 'Error del servidor: ' + error.message });
         }
     }
 });
@@ -560,6 +559,100 @@ app.put('/api/maestros/:id', async (req, res) => {
     } catch (error) {
         console.error('Error actualizando maestro:', error);
         res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+// Obtener producto por ID
+app.get('/api/productos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const Producto = require('./models/Producto');
+        
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ error: 'ID no válido' });
+        }
+        
+        const producto = await Producto.findById(id);
+        
+        if (!producto) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+        
+        res.json(producto);
+    } catch (error) {
+        console.error('Error obteniendo producto:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+// Actualizar producto por ID
+app.put('/api/productos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre, precio, cantidad, caracteristicas } = req.body;
+        const Producto = require('./models/Producto');
+        
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ error: 'ID no válido' });
+        }
+        
+        if (!nombre || !nombre.trim()) {
+            return res.status(400).json({ error: 'El nombre del producto es obligatorio' });
+        }
+
+        if (!precio || precio <= 0) {
+            return res.status(400).json({ error: 'El precio es obligatorio y debe ser mayor a 0' });
+        }
+
+        const updateData = {
+            nombre: nombre.trim(),
+            precio: parseFloat(precio)
+        };
+
+        if (cantidad !== undefined && cantidad !== '') {
+            updateData.cantidad = parseInt(cantidad);
+        }
+
+        if (caracteristicas !== undefined) {
+            updateData.caracteristicas = caracteristicas.trim();
+        }
+
+        const updatedProducto = await Producto.findByIdAndUpdate(
+            id,
+            updateData,
+            { new: true, runValidators: true }
+        );
+        
+        if (!updatedProducto) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+        
+        res.json({ 
+            message: 'Producto actualizado correctamente', 
+            producto: updatedProducto 
+        });
+        
+    } catch (error) {
+        console.error('Error actualizando producto:', error);
+        
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(val => val.message);
+            res.status(400).json({ error: messages.join(', ') });
+        } else {
+            res.status(500).json({ error: 'Error del servidor' });
+        }
+    }
+});
+
+// Obtener todos los productos
+app.get('/api/productos', async (req, res) => {
+    try {
+        const Producto = require('./models/Producto');
+        const productos = await Producto.find({ activo: true }).sort({ nombre: 1 });
+        res.json(productos);
+    } catch (error) {
+        console.error('Error obteniendo productos:', error);
+        res.status(500).json({ error: 'Error al obtener productos' });
     }
 });
 

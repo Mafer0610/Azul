@@ -57,13 +57,11 @@
                 <p>Información completa del registro</p>
             </div>
 
-            <!-- Loading State -->
             <div id="loadingDetail" class="loading-detail">
                 <div class="loading-spinner" style="margin: 0 auto 15px;"></div>
                 <p>Cargando información...</p>
             </div>
 
-            <!-- Error State -->
             <div id="errorDetail" class="error-detail" style="display: none;">
                 <h3>❌ Error</h3>
                 <p id="errorMessage">No se pudo cargar la información del niño</p>
@@ -72,14 +70,12 @@
                 </button>
             </div>
 
-            <!-- Content -->
             <div id="detailContent" style="display: none;">
                 <div class="detail-content">
                     <a href="javascript:history.back()" class="back-link">
                         ← Volver a la lista
                     </a>
 
-                    <!-- Información Personal -->
                     <div class="detail-section">
                         <h3>👤 Información Personal</h3>
                         <div class="detail-row">
@@ -108,7 +104,6 @@
                         </div>
                     </div>
 
-                    <!-- Información del Tutor -->
                     <div class="detail-section">
                         <h3>👨‍👩‍👧‍👦 Información del Tutor</h3>
                         <div class="detail-row">
@@ -129,7 +124,6 @@
                         </div>
                     </div>
 
-                    <!-- Información Médica -->
                     <div class="detail-section">
                         <h3>🏥 Información Médica</h3>
                         <div class="detail-subsection">
@@ -146,7 +140,6 @@
                         </div>
                     </div>
 
-                    <!-- Información del Sistema -->
                     <div class="detail-section">
                         <h3>ℹ️ Información del Sistema</h3>
                         <div class="detail-row">
@@ -164,7 +157,6 @@
                     </div>
                 </div>
 
-                <!-- Acciones -->
                 <div class="actions-section">
                     <button class="btn btn-warning" onclick="editarPeque()">
                         ✏️ Editar Información
@@ -221,10 +213,9 @@
             }
         }
 
-        function displayPequeDetails(peque) {
+function displayPequeDetails(peque) {
             document.getElementById('nombreCompleto').textContent = peque.nombreCompleto || '-';
             
-            // Fecha de nacimiento
             if (peque.fechaNacimiento) {
                 const fechaNac = new Date(peque.fechaNacimiento);
                 document.getElementById('fechaNacimiento').textContent = fechaNac.toLocaleDateString('es-MX');
@@ -239,7 +230,6 @@
                 comportamientoEl.textContent = '-';
             }
 
-            // Tipo de sangre con estilo especial
             const tipoSangreEl = document.getElementById('tipoSangre');
             if (peque.tipoSangre) {
                 tipoSangreEl.innerHTML = `<span class="blood-badge">${peque.tipoSangre}</span>`;
@@ -247,21 +237,52 @@
                 tipoSangreEl.textContent = '-';
             }
 
-            // Servicio con badge
             const servicioEl = document.getElementById('servicio');
-            if (peque.servicio) {
+            if (peque.servicios && Array.isArray(peque.servicios) && peque.servicios.length > 0) {
+                const serviciosBadges = peque.servicios.map(servicio => 
+                    `<span class="service-badge">${servicio}</span>`
+                ).join(' ');
+                servicioEl.innerHTML = serviciosBadges;
+            } else if (peque.servicio) {
                 servicioEl.innerHTML = `<span class="service-badge">${peque.servicio}</span>`;
             } else {
-                servicioEl.textContent = '-';
+                servicioEl.textContent = 'Sin servicios registrados';
             }
 
-            document.getElementById('nombreTutor').textContent = peque.nombreTutor || '-';
-            document.getElementById('celularTutor').textContent = formatPhone(peque.celularTutor) || '-';
-            document.getElementById('correoTutor').textContent = peque.correoTutor || '-';
+            const nombreTutor = peque.nombreTutor1 || peque.nombreTutor || '-';
+            const celularTutor = peque.celularTutor1 || peque.celularTutor || '-';
+            const correoTutor = peque.correoTutor1 || peque.correoTutor || '-';
+
+            document.getElementById('nombreTutor').textContent = nombreTutor;
+            document.getElementById('celularTutor').textContent = formatPhone(celularTutor);
+            document.getElementById('correoTutor').textContent = correoTutor;
+            
+            if (peque.nombreTutor2) {
+                const tutorSection = document.querySelector('.detail-section:nth-child(3)');
+                
+                const tutor2Html = `
+                    <h4 style="color: #495057; margin: 20px 0 10px 0; border-top: 1px solid #dee2e6; padding-top: 15px;">Tutor 2</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Nombre del Tutor 2:</span>
+                        <span class="detail-value highlight">${peque.nombreTutor2}</span>
+                    </div>
+                    ${peque.celularTutor2 ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Celular Tutor 2:</span>
+                        <span class="detail-value">${formatPhone(peque.celularTutor2)}</span>
+                    </div>` : ''}
+                    ${peque.correoTutor2 ? `
+                    <div class="detail-row">
+                        <span class="detail-label">Correo Tutor 2:</span>
+                        <span class="detail-value">${peque.correoTutor2}</span>
+                    </div>` : ''}
+                `;
+                
+                tutorSection.innerHTML += tutor2Html;
+            }
             
             document.getElementById('fechaPago').textContent = peque.fechaPago ? `Día ${peque.fechaPago}` : '-';
 
-            // Características
             const caracteristicasEl = document.getElementById('caracteristicas');
             if (peque.caracteristicas && peque.caracteristicas.trim()) {
                 caracteristicasEl.textContent = peque.caracteristicas;
@@ -273,7 +294,6 @@
                 caracteristicasEl.style.color = '#6c757d';
             }
 
-            // Alergias
             const alergiasEl = document.getElementById('alergias');
             if (peque.alergias && peque.alergias.trim()) {
                 alergiasEl.textContent = peque.alergias;
@@ -296,6 +316,63 @@
             document.title = `Detalles - ${peque.nombreCompleto}`;
 
             showContent();
+        }
+
+        function contactarTutor() {
+            if (currentPeque) {
+                const tutor1 = currentPeque.celularTutor1 || currentPeque.celularTutor;
+                const tutor2 = currentPeque.celularTutor2;
+                
+                if (tutor1 && tutor2) {
+                    const opcion = confirm(`Se encontraron dos tutores:\n\nTutor 1: ${currentPeque.nombreTutor1 || currentPeque.nombreTutor}\nTutor 2: ${currentPeque.nombreTutor2}\n\nHaz clic en "Aceptar" para contactar al Tutor 1, o "Cancelar" para contactar al Tutor 2`);
+                    
+                    const phone = opcion ? tutor1.replace(/\D/g, '') : tutor2.replace(/\D/g, '');
+                    const nombreTutor = opcion ? (currentPeque.nombreTutor1 || currentPeque.nombreTutor) : currentPeque.nombreTutor2;
+                    
+                    const message = encodeURIComponent(`Hola ${nombreTutor}, me comunico con usted respecto a ${currentPeque.nombreCompleto}.`);
+                    const whatsappUrl = `https://wa.me/52${phone}?text=${message}`;
+                    window.open(whatsappUrl, '_blank');
+                } else if (tutor1) {
+                    const phone = tutor1.replace(/\D/g, '');
+                    const nombreTutor = currentPeque.nombreTutor1 || currentPeque.nombreTutor;
+                    const message = encodeURIComponent(`Hola ${nombreTutor}, me comunico con usted respecto a ${currentPeque.nombreCompleto}.`);
+                    const whatsappUrl = `https://wa.me/52${phone}?text=${message}`;
+                    window.open(whatsappUrl, '_blank');
+                } else {
+                    alert('No hay número de celular registrado para ningún tutor');
+                }
+            } else {
+                alert('No hay información del niño disponible');
+            }
+        }
+
+        function enviarCorreo() {
+            if (currentPeque) {
+                const correo1 = currentPeque.correoTutor1 || currentPeque.correoTutor;
+                const correo2 = currentPeque.correoTutor2;
+                
+                if (correo1 && correo2) {
+                    const opcion = confirm(`Se encontraron dos correos:\n\nTutor 1: ${correo1}\nTutor 2: ${correo2}\n\nHaz clic en "Aceptar" para enviar al Tutor 1, o "Cancelar" para enviar al Tutor 2`);
+                    
+                    const correoDestino = opcion ? correo1 : correo2;
+                    const nombreTutor = opcion ? (currentPeque.nombreTutor1 || currentPeque.nombreTutor) : currentPeque.nombreTutor2;
+                    
+                    const subject = encodeURIComponent(`Información sobre ${currentPeque.nombreCompleto}`);
+                    const body = encodeURIComponent(`Estimado/a ${nombreTutor},\n\nMe pongo en contacto con usted respecto a ${currentPeque.nombreCompleto}.\n\nSaludos cordiales.`);
+                    const mailtoUrl = `mailto:${correoDestino}?subject=${subject}&body=${body}`;
+                    window.location.href = mailtoUrl;
+                } else if (correo1) {
+                    const nombreTutor = currentPeque.nombreTutor1 || currentPeque.nombreTutor;
+                    const subject = encodeURIComponent(`Información sobre ${currentPeque.nombreCompleto}`);
+                    const body = encodeURIComponent(`Estimado/a ${nombreTutor},\n\nMe pongo en contacto con usted respecto a ${currentPeque.nombreCompleto}.\n\nSaludos cordiales.`);
+                    const mailtoUrl = `mailto:${correo1}?subject=${subject}&body=${body}`;
+                    window.location.href = mailtoUrl;
+                } else {
+                    alert('No hay correo electrónico registrado para ningún tutor');
+                }
+            } else {
+                alert('No hay información del niño disponible');
+            }
         }
 
         function editarPeque() {
@@ -331,28 +408,6 @@
             } catch (error) {
                 console.error('Error eliminando peque:', error);
                 alert('❌ Error al conectar con el servidor');
-            }
-        }
-
-        function contactarTutor() {
-            if (currentPeque && currentPeque.celularTutor) {
-                const phone = currentPeque.celularTutor.replace(/\D/g, '');
-                const message = encodeURIComponent(`Hola ${currentPeque.nombreTutor}, me comunico con usted respecto a ${currentPeque.nombreCompleto}.`);
-                const whatsappUrl = `https://wa.me/52${phone}?text=${message}`;
-                window.open(whatsappUrl, '_blank');
-            } else {
-                alert('No hay número de celular registrado para este tutor');
-            }
-        }
-
-        function enviarCorreo() {
-            if (currentPeque && currentPeque.correoTutor) {
-                const subject = encodeURIComponent(`Información sobre ${currentPeque.nombreCompleto}`);
-                const body = encodeURIComponent(`Estimado/a ${currentPeque.nombreTutor},\n\nMe pongo en contacto con usted respecto a ${currentPeque.nombreCompleto}.\n\nSaludos cordiales.`);
-                const mailtoUrl = `mailto:${currentPeque.correoTutor}?subject=${subject}&body=${body}`;
-                window.location.href = mailtoUrl;
-            } else {
-                alert('No hay correo electrónico registrado para este tutor');
             }
         }
 
