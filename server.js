@@ -10,8 +10,13 @@ const Peque = require('./models/Peque');
 const maestroRoutes = require('./routes/maestros');
 const Maestro = require('./models/Maestro');
 const productoRoutes = require('./routes/productos');
+const { GoogleSpreadsheet } = require('google-spreadsheet');
+const { JWT } = require('google-auth-library');
 
 const app = express();
+const GOOGLE_SHEETS_PRIVATE_KEY = process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n');
+const GOOGLE_SHEETS_CLIENT_EMAIL = process.env.GOOGLE_SHEETS_CLIENT_EMAIL;
+const GOOGLE_SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
 
 app.use(cors());
 app.use(express.json());
@@ -82,7 +87,7 @@ app.get('/api/eventos', async (req, res) => {
     }
 });
 
-// Crear un evento
+// Crear evento
 app.post('/api/eventos', async (req, res) => {
     try {
         const { fecha, time, title, description } = req.body;
@@ -91,13 +96,19 @@ app.post('/api/eventos', async (req, res) => {
         }
         const nuevoEvento = new Evento({ fecha, time, title, description });
         await nuevoEvento.save();
+        
+        // Sincronizar con Google Sheets
+        actualizarGoogleSheets().catch(err => 
+            console.error('Error sincronizando Google Sheets:', err.message)
+        );
+        
         res.status(201).json(nuevoEvento);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Actualizar evento por id
+// Actualizar evento
 app.put('/api/eventos/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -110,13 +121,18 @@ app.put('/api/eventos/:id', async (req, res) => {
         if (!eventoActualizado) {
             return res.status(404).json({ error: 'Evento no encontrado' });
         }
+        
+        actualizarGoogleSheets().catch(err => 
+            console.error('Error sincronizando Google Sheets:', err.message)
+        );
+        
         res.json(eventoActualizado);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-// Eliminar evento por id
+// Eliminar evento
 app.delete('/api/eventos/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -124,6 +140,12 @@ app.delete('/api/eventos/:id', async (req, res) => {
         if (!eliminado) {
             return res.status(404).json({ error: 'Evento no encontrado' });
         }
+        
+        // Sincronizar con Google Sheets
+        actualizarGoogleSheets().catch(err => 
+            console.error('Error sincronizando Google Sheets:', err.message)
+        );
+        
         res.json({ message: 'Evento eliminado correctamente' });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -139,10 +161,10 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Servicios permitidos - ACTUALIZADO con Lenguaje
+// Servicios permitidos
 const serviciosPermitidos = ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial y Estimulación temprana', 'Lenguaje'];
 
-// Crear peque - ACTUALIZADO para dos tutores
+// Crear peque
 app.post('/api/peques', async (req, res) => {
     try {
         console.log('=== INICIO REGISTRO PEQUE ===');
@@ -165,7 +187,6 @@ app.post('/api/peques', async (req, res) => {
             fechaPago 
         } = req.body;
         
-        // VALIDACIÓN MÍNIMA - Solo nombre es obligatorio
         if (!nombreCompleto || !nombreCompleto.trim()) {
             console.log('❌ Falta nombre completo');
             return res.status(400).json({ error: 'El nombre completo es obligatorio' });
@@ -173,7 +194,6 @@ app.post('/api/peques', async (req, res) => {
 
         console.log('✅ Validación básica pasada');
 
-        // Validar servicios solo si se proporcionan
         if (servicios && Array.isArray(servicios) && servicios.length > 0) {
             const serviciosInvalidos = servicios.filter(servicio => !serviciosPermitidos.includes(servicio));
             if (serviciosInvalidos.length > 0) {
@@ -184,7 +204,6 @@ app.post('/api/peques', async (req, res) => {
             }
         }
 
-        // Validaciones opcionales - solo si se proporcionan
         if (fechaPago && (fechaPago < 1 || fechaPago > 31)) {
             return res.status(400).json({ error: 'La fecha de pago debe estar entre 1 y 31' });
         }
@@ -197,7 +216,6 @@ app.post('/api/peques', async (req, res) => {
             }
         }
 
-        // Validar celulares de tutores
         if (celularTutor1 && !/^\d{10}$/.test(celularTutor1)) {
             return res.status(400).json({ error: 'El celular del tutor 1 debe tener exactamente 10 dígitos' });
         }
@@ -206,7 +224,6 @@ app.post('/api/peques', async (req, res) => {
             return res.status(400).json({ error: 'El celular del tutor 2 debe tener exactamente 10 dígitos' });
         }
 
-        // Validar correos de tutores
         if (correoTutor1 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoTutor1)) {
             return res.status(400).json({ error: 'El formato del correo electrónico del tutor 1 no es válido' });
         }
@@ -215,7 +232,6 @@ app.post('/api/peques', async (req, res) => {
             return res.status(400).json({ error: 'El formato del correo electrónico del tutor 2 no es válido' });
         }
 
-        // Verificar si ya existe un peque con el mismo nombre
         const existePeque = await Peque.findOne({ 
             nombreCompleto: nombreCompleto.trim(),
             activo: true 
@@ -228,12 +244,10 @@ app.post('/api/peques', async (req, res) => {
 
         console.log('✅ Nombre único verificado');
 
-        // Crear el objeto con solo los campos que tienen valor
         const pequeData = {
             nombreCompleto: nombreCompleto.trim()
         };
 
-        // Solo agregar campos si tienen valor
         if (fechaNacimiento) pequeData.fechaNacimiento = new Date(fechaNacimiento);
         if (comportamiento) pequeData.comportamiento = comportamiento;
         if (caracteristicas && caracteristicas.trim()) pequeData.caracteristicas = caracteristicas.trim();
@@ -655,6 +669,165 @@ app.get('/api/productos', async (req, res) => {
         res.status(500).json({ error: 'Error al obtener productos' });
     }
 });
+
+// Función para conectar con Google Sheets
+async function conectarGoogleSheets() {
+    try {
+        if (!GOOGLE_SHEETS_PRIVATE_KEY || !GOOGLE_SHEETS_CLIENT_EMAIL || !GOOGLE_SPREADSHEET_ID) {
+            console.log('⚠️  Credenciales de Google Sheets no configuradas');
+            return null;
+        }
+
+        const serviceAccountAuth = new JWT({
+            email: GOOGLE_SHEETS_CLIENT_EMAIL,
+            key: GOOGLE_SHEETS_PRIVATE_KEY,
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+        });
+
+        const doc = new GoogleSpreadsheet(GOOGLE_SPREADSHEET_ID, serviceAccountAuth);
+        await doc.loadInfo();
+        console.log('✅ Conectado a Google Sheets:', doc.title);
+        return doc;
+    } catch (error) {
+        console.error('❌ Error conectando con Google Sheets:', error.message);
+        return null;
+    }
+}
+
+// Función para actualizar Google Sheets
+async function actualizarGoogleSheets() {
+    try {
+        const doc = await conectarGoogleSheets();
+        if (!doc) return;
+
+        // Buscar o crear la hoja "Agenda"
+        let sheet = doc.sheetsByTitle['Agenda'];
+        if (!sheet) {
+            sheet = await doc.addSheet({ 
+                title: 'Agenda',
+                headerValues: ['Fecha', 'Día', 'Hora', 'Niño', 'Clase', 'Maestro', 'Tutor', 'Celular', 'Características']
+            });
+            console.log('📄 Hoja "Agenda" creada');
+        }
+
+        // Obtener todos los eventos de los próximos 30 días
+        const fechaInicio = new Date();
+        const fechaFin = new Date();
+        fechaFin.setDate(fechaInicio.getDate() + 30);
+        
+        const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+        const fechaFinStr = fechaFin.toISOString().split('T')[0];
+        
+        const eventos = await Evento.find({
+            fecha: {
+                $gte: fechaInicioStr,
+                $lte: fechaFinStr
+            }
+        }).sort({ fecha: 1, time: 1 });
+
+        // Limpiar hoja
+        await sheet.clear();
+        await sheet.setHeaderRow(['Fecha', 'Día', 'Hora', 'Niño', 'Clase', 'Maestro', 'Tutor', 'Celular', 'Características']);
+
+        if (eventos.length === 0) {
+            console.log('📅 No hay eventos para sincronizar');
+            return;
+        }
+
+        // Preparar datos
+        const rows = [];
+        const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        
+        for (const evento of eventos) {
+            const fecha = new Date(evento.fecha + 'T00:00:00');
+            const diaSemana = diasSemana[fecha.getDay()];
+            
+            // Extraer datos del evento
+            let nombreNino = '';
+            let clase = '';
+            if (evento.title && evento.title.includes(' - ')) {
+                const partes = evento.title.split(' - ');
+                nombreNino = partes[0];
+                clase = partes[1];
+            } else {
+                nombreNino = evento.title;
+            }
+
+            let maestro = '';
+            let tutor = '';
+            let celular = '';
+            let caracteristicas = '';
+            
+            if (evento.description) {
+                const lineas = evento.description.split('\n');
+                lineas.forEach(linea => {
+                    if (linea.startsWith('Maestro:')) {
+                        maestro = linea.replace('Maestro:', '').trim();
+                    } else if (linea.startsWith('Tutor:')) {
+                        tutor = linea.replace('Tutor:', '').trim();
+                    } else if (linea.startsWith('Tel:')) {
+                        celular = linea.replace('Tel:', '').trim();
+                    } else if (linea.startsWith('Características:')) {
+                        caracteristicas = linea.replace('Características:', '').trim();
+                    }
+                });
+            }
+
+            // Formatear fecha y hora
+            const fechaFormateada = fecha.toLocaleDateString('es-MX');
+            const [horas, minutos] = evento.time.split(':');
+            const horaNum = parseInt(horas);
+            const periodo = horaNum >= 12 ? 'PM' : 'AM';
+            const hora12 = horaNum > 12 ? horaNum - 12 : (horaNum === 0 ? 12 : horaNum);
+            const horaFormateada = `${hora12}:${minutos} ${periodo}`;
+
+            rows.push({
+                'Fecha': fechaFormateada,
+                'Día': diaSemana,
+                'Hora': horaFormateada,
+                'Niño': nombreNino,
+                'Clase': clase,
+                'Maestro': maestro,
+                'Tutor': tutor,
+                'Celular': celular,
+                'Características': caracteristicas
+            });
+        }
+
+        // Insertar datos
+        await sheet.addRows(rows);
+        
+        // Formatear la hoja
+        await sheet.updateProperties({
+            gridProperties: {
+                frozenRowCount: 1
+            }
+        });
+
+        console.log(`✅ Google Sheets actualizado con ${rows.length} eventos`);
+        
+    } catch (error) {
+        console.error('❌ Error actualizando Google Sheets:', error.message);
+    }
+}
+
+// Ruta para sincronización manual
+app.post('/api/sync-sheets', async (req, res) => {
+    try {
+        await actualizarGoogleSheets();
+        res.json({ message: 'Google Sheets sincronizado correctamente' });
+    } catch (error) {
+        console.error('Error en sincronización manual:', error);
+        res.status(500).json({ error: 'Error sincronizando: ' + error.message });
+    }
+});
+
+console.log('🔄 Iniciando sincronización inicial con Google Sheets...');
+setTimeout(() => {
+    actualizarGoogleSheets().catch(err => 
+        console.error('Error en sincronización inicial:', err.message)
+    );
+}, 5000);
 
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
