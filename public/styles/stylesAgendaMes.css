@@ -527,7 +527,44 @@ body {
     border-left: 4px solid #F24B99;
 }
 
-/* Responsive Design */
+.btn-danger {
+    background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%);
+    color: white;
+    border: 2px solid transparent;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: linear-gradient(135deg, #D32F2F 0%, #B71C1C 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(244, 67, 54, 0.3);
+    border-color: #B71C1C;
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(244, 67, 54, 0.2);
+}
+
+/* Mejorar el espaciado de los botones en el modal */
+.modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+    .modal-buttons {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .btn {
+        margin-bottom: 8px;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         margin: 10px;

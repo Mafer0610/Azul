@@ -44,7 +44,14 @@ const eventoSchema = new mongoose.Schema({
     fecha: { type: String, required: true },
     time: { type: String, required: true },
     title: { type: String, required: true },
-    description: { type: String, default: '' }
+    description: { type: String, default: '' },
+    nombreNino: { type: String, default: '' },
+    clase: { type: String, default: '' },
+    maestro: { type: String, default: '' },
+    caracteristicas: { type: String, default: '' },
+    nombreTutor: { type: String, default: '' },
+    celularTutor: { type: String, default: '' },
+    userId: { type: String, default: '' }
 });
 
 const Evento = mongoose.model('Evento', eventoSchema, 'actividades');
@@ -700,7 +707,6 @@ async function actualizarGoogleSheets() {
         const doc = await conectarGoogleSheets();
         if (!doc) return;
 
-        // Buscar o crear la hoja "Agenda"
         let sheet = doc.sheetsByTitle['Agenda'];
         if (!sheet) {
             sheet = await doc.addSheet({ 
@@ -710,7 +716,6 @@ async function actualizarGoogleSheets() {
             console.log('📄 Hoja "Agenda" creada');
         }
 
-        // Obtener todos los eventos de los próximos 30 días
         const fechaInicio = new Date();
         const fechaFin = new Date();
         fechaFin.setDate(fechaInicio.getDate() + 30);
@@ -725,7 +730,6 @@ async function actualizarGoogleSheets() {
             }
         }).sort({ fecha: 1, time: 1 });
 
-        // Limpiar hoja
         await sheet.clear();
         await sheet.setHeaderRow(['Fecha', 'Día', 'Hora', 'Niño', 'Clase', 'Maestro', 'Tutor', 'Celular', 'Características']);
 
@@ -734,7 +738,6 @@ async function actualizarGoogleSheets() {
             return;
         }
 
-        // Preparar datos
         const rows = [];
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
         
@@ -742,38 +745,36 @@ async function actualizarGoogleSheets() {
             const fecha = new Date(evento.fecha + 'T00:00:00');
             const diaSemana = diasSemana[fecha.getDay()];
             
-            // Extraer datos del evento
-            let nombreNino = '';
-            let clase = '';
-            if (evento.title && evento.title.includes(' - ')) {
+            let nombreNino = evento.nombreNino || '';
+            let clase = evento.clase || '';
+            let maestro = evento.maestro || '';
+            let caracteristicas = evento.caracteristicas || '';
+            let tutor = evento.nombreTutor || '';
+            let celular = evento.celularTutor || '';
+            
+            if (!nombreNino && !clase && evento.title && evento.title.includes(' - ')) {
                 const partes = evento.title.split(' - ');
                 nombreNino = partes[0];
-                clase = partes[1];
-            } else {
+                clase = partes[1] || '';
+            } else if (!nombreNino && evento.title) {
                 nombreNino = evento.title;
             }
 
-            let maestro = '';
-            let tutor = '';
-            let celular = '';
-            let caracteristicas = '';
-            
-            if (evento.description) {
+            if (evento.description && (!maestro || !tutor || !celular || !caracteristicas)) {
                 const lineas = evento.description.split('\n');
                 lineas.forEach(linea => {
-                    if (linea.startsWith('Maestro:')) {
+                    if (linea.startsWith('Maestro:') && !maestro) {
                         maestro = linea.replace('Maestro:', '').trim();
-                    } else if (linea.startsWith('Tutor:')) {
+                    } else if (linea.startsWith('Tutor:') && !tutor) {
                         tutor = linea.replace('Tutor:', '').trim();
-                    } else if (linea.startsWith('Tel:')) {
+                    } else if (linea.startsWith('Tel:') && !celular) {
                         celular = linea.replace('Tel:', '').trim();
-                    } else if (linea.startsWith('Características:')) {
+                    } else if (linea.startsWith('Características:') && !caracteristicas) {
                         caracteristicas = linea.replace('Características:', '').trim();
                     }
                 });
             }
 
-            // Formatear fecha y hora
             const fechaFormateada = fecha.toLocaleDateString('es-MX');
             const [horas, minutos] = evento.time.split(':');
             const horaNum = parseInt(horas);
@@ -794,10 +795,8 @@ async function actualizarGoogleSheets() {
             });
         }
 
-        // Insertar datos
         await sheet.addRows(rows);
         
-        // Formatear la hoja
         await sheet.updateProperties({
             gridProperties: {
                 frozenRowCount: 1
@@ -805,9 +804,11 @@ async function actualizarGoogleSheets() {
         });
 
         console.log(`✅ Google Sheets actualizado con ${rows.length} eventos`);
+        console.log('📝 Datos enviados:', rows);
         
     } catch (error) {
         console.error('❌ Error actualizando Google Sheets:', error.message);
+        throw error;
     }
 }
 
@@ -828,6 +829,29 @@ setTimeout(() => {
         console.error('Error en sincronización inicial:', err.message)
     );
 }, 5000);
+
+// Ruta de debug para ver qué datos se están enviando
+app.get('/api/debug-eventos', async (req, res) => {
+    try {
+        const eventos = await Evento.find({}).sort({ fecha: 1, time: 1 });
+        console.log('=== DEBUG EVENTOS ===');
+        console.log('Total eventos:', eventos.length);
+        eventos.forEach((evento, index) => {
+            console.log(`Evento ${index + 1}:`, {
+                fecha: evento.fecha,
+                time: evento.time,
+                title: evento.title,
+                description: evento.description,
+                nombreNino: evento.nombreNino,
+                clase: evento.clase,
+                maestro: evento.maestro
+            });
+        });
+        res.json(eventos);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;

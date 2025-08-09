@@ -96,8 +96,8 @@ class AgendaMensualMongoDB {
 
                 if (encontrado) {
                     document.getElementById('caracteristicasNino').value = encontrado.caracteristicas || '';
-                    document.getElementById('nombreTutor').value = encontrado.nombreTutor || '';
-                    document.getElementById('celularTutor').value = encontrado.celularTutor || '';
+                    document.getElementById('nombreTutor').value = encontrado.nombreTutor1 || '';
+                    document.getElementById('celularTutor').value = encontrado.celularTutor1 || '';
                 } else {
                     document.getElementById('caracteristicasNino').value = '';
                     document.getElementById('nombreTutor').value = '';
@@ -238,6 +238,10 @@ class AgendaMensualMongoDB {
         document.getElementById('modalTitle').textContent = `Agregar Evento - ${nombreDia}`;
         document.getElementById('eventForm').reset();
         document.getElementById('errorMessage').style.display = 'none';
+        
+        // OCULTAR el botón de eliminar cuando agregamos un evento nuevo
+        document.getElementById('deleteBtn').style.display = 'none';
+        
         document.getElementById('eventModal').style.display = 'block';
     }
 
@@ -305,6 +309,10 @@ class AgendaMensualMongoDB {
         }
         
         document.getElementById('errorMessage').style.display = 'none';
+        
+        // MOSTRAR el botón de eliminar cuando estamos editando
+        document.getElementById('deleteBtn').style.display = 'inline-block';
+        
         document.getElementById('eventModal').style.display = 'block';
     }
 
@@ -324,6 +332,12 @@ class AgendaMensualMongoDB {
             if (response.ok) {
                 await this.cargarEventos();
                 this.renderizarCalendario();
+                
+                // Cerrar el modal después de eliminar
+                this.cerrarModal();
+                
+                // Mostrar mensaje de éxito
+                alert('Evento eliminado correctamente');
             } else {
                 const error = await response.json();
                 alert('Error eliminando evento: ' + error.error);
@@ -435,6 +449,10 @@ class AgendaMensualMongoDB {
         document.getElementById('eventModal').style.display = 'none';
         document.getElementById('eventForm').reset();
         document.getElementById('errorMessage').style.display = 'none';
+        
+        // OCULTAR el botón de eliminar al cerrar el modal
+        document.getElementById('deleteBtn').style.display = 'none';
+        
         this.eventoEditando = null;
         this.fechaSeleccionada = null;
         this.nombreDiaSeleccionado = null;
