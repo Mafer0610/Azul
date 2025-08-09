@@ -201,6 +201,35 @@ body{
     color: #05404b;
 }
 
+/* Estilos para la sección de tutores */
+.tutores-section {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border: 2px solid #e9edf4;
+}
+
+.tutors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.tutores-section h4 {
+    color: #085B69;
+    margin: 1rem 0 0.5rem 0;
+    font-size: 1.1rem;
+    border-left: 4px solid #F24B99;
+    padding-left: 1rem;
+}
+
+.tutores-section h3 {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
 @media (max-width: 768px) {
     .form-container {
         margin: 1rem;
@@ -224,6 +253,14 @@ body{
         position: static;
         margin-bottom: 1rem;
         text-align: center;
+    }
+
+    .tutors-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tutores-section {
+        padding: 1rem;
     }
 }
 

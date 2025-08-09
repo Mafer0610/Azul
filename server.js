@@ -130,7 +130,7 @@ app.delete('/api/eventos/:id', async (req, res) => {
     }
 });
 
-// Ruta de health check (agregar antes del PORT)
+// Ruta de health check
 app.get('/health', (req, res) => {
     res.json({ 
         status: 'OK', 
@@ -139,10 +139,10 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Servicios permitidos
-const serviciosPermitidos = ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial y Estimulación temprana'];
+// Servicios permitidos - ACTUALIZADO con Lenguaje
+const serviciosPermitidos = ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial y Estimulación temprana', 'Lenguaje'];
 
-// Crear
+// Crear peque - ACTUALIZADO para dos tutores
 app.post('/api/peques', async (req, res) => {
     try {
         console.log('=== INICIO REGISTRO PEQUE ===');
@@ -156,47 +156,64 @@ app.post('/api/peques', async (req, res) => {
             tipoSangre,
             alergias,
             servicios,
-            nombreTutor, 
-            celularTutor, 
-            correoTutor,
+            nombreTutor1, 
+            celularTutor1, 
+            correoTutor1,
+            nombreTutor2,
+            celularTutor2,
+            correoTutor2,
             fechaPago 
         } = req.body;
         
-        // Validaciones básicas
-        if (!nombreCompleto || !fechaNacimiento || !comportamiento|| 
-            !servicios || !nombreTutor || !celularTutor || !correoTutor || !fechaPago) {
-            console.log('❌ Faltan campos obligatorios');
-            return res.status(400).json({ error: 'Faltan campos obligatorios' });
+        // VALIDACIÓN MÍNIMA - Solo nombre es obligatorio
+        if (!nombreCompleto || !nombreCompleto.trim()) {
+            console.log('❌ Falta nombre completo');
+            return res.status(400).json({ error: 'El nombre completo es obligatorio' });
         }
 
-        // Validar que servicios sea un array y tenga al menos un elemento
-        if (!Array.isArray(servicios) || servicios.length === 0) {
-            console.log('❌ Servicios inválidos:', servicios);
-            return res.status(400).json({ error: 'Debe seleccionar al menos un servicio' });
+        console.log('✅ Validación básica pasada');
+
+        // Validar servicios solo si se proporcionan
+        if (servicios && Array.isArray(servicios) && servicios.length > 0) {
+            const serviciosInvalidos = servicios.filter(servicio => !serviciosPermitidos.includes(servicio));
+            if (serviciosInvalidos.length > 0) {
+                console.log('❌ Servicios no válidos:', serviciosInvalidos);
+                return res.status(400).json({ 
+                    error: `Servicios no válidos: ${serviciosInvalidos.join(', ')}` 
+                });
+            }
         }
 
-        // Validar que todos los servicios están permitidos
-        const serviciosInvalidos = servicios.filter(servicio => !serviciosPermitidos.includes(servicio));
-        if (serviciosInvalidos.length > 0) {
-            console.log('❌ Servicios no válidos:', serviciosInvalidos);
-            return res.status(400).json({ 
-                error: `Servicios no válidos: ${serviciosInvalidos.join(', ')}` 
-            });
-        }
-
-        // Validación de fecha de pago
-        if (fechaPago < 1 || fechaPago > 31) {
+        // Validaciones opcionales - solo si se proporcionan
+        if (fechaPago && (fechaPago < 1 || fechaPago > 31)) {
             return res.status(400).json({ error: 'La fecha de pago debe estar entre 1 y 31' });
         }
 
-        // Validación de fecha de nacimiento
-        const fechaNac = new Date(fechaNacimiento);
-        const hoy = new Date();
-        if (fechaNac > hoy) {
-            return res.status(400).json({ error: 'La fecha de nacimiento no puede ser futura' });
+        if (fechaNacimiento) {
+            const fechaNac = new Date(fechaNacimiento);
+            const hoy = new Date();
+            if (fechaNac > hoy) {
+                return res.status(400).json({ error: 'La fecha de nacimiento no puede ser futura' });
+            }
         }
 
-        console.log('✅ Validaciones básicas pasadas');
+        // Validar celulares de tutores
+        if (celularTutor1 && !/^\d{10}$/.test(celularTutor1)) {
+            return res.status(400).json({ error: 'El celular del tutor 1 debe tener exactamente 10 dígitos' });
+        }
+
+        if (celularTutor2 && !/^\d{10}$/.test(celularTutor2)) {
+            return res.status(400).json({ error: 'El celular del tutor 2 debe tener exactamente 10 dígitos' });
+        }
+
+        // Validar correos de tutores
+        if (correoTutor1 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoTutor1)) {
+            return res.status(400).json({ error: 'El formato del correo electrónico del tutor 1 no es válido' });
+        }
+
+        if (correoTutor2 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoTutor2)) {
+            return res.status(400).json({ error: 'El formato del correo electrónico del tutor 2 no es válido' });
+        }
 
         // Verificar si ya existe un peque con el mismo nombre
         const existePeque = await Peque.findOne({ 
@@ -211,20 +228,30 @@ app.post('/api/peques', async (req, res) => {
 
         console.log('✅ Nombre único verificado');
 
-        // Crear el objeto sin incluir edad (se calculará automáticamente)
+        // Crear el objeto con solo los campos que tienen valor
         const pequeData = {
-            nombreCompleto: nombreCompleto.trim(),
-            fechaNacimiento: new Date(fechaNacimiento),
-            comportamiento,
-            caracteristicas: caracteristicas?.trim() || '',
-            tipoSangre: tipoSangre?.trim() || '',
-            alergias: alergias?.trim() || '',
-            servicios,
-            nombreTutor: nombreTutor.trim(),
-            celularTutor: celularTutor.trim(),
-            correoTutor: correoTutor.trim(),
-            fechaPago: parseInt(fechaPago)
+            nombreCompleto: nombreCompleto.trim()
         };
+
+        // Solo agregar campos si tienen valor
+        if (fechaNacimiento) pequeData.fechaNacimiento = new Date(fechaNacimiento);
+        if (comportamiento) pequeData.comportamiento = comportamiento;
+        if (caracteristicas && caracteristicas.trim()) pequeData.caracteristicas = caracteristicas.trim();
+        if (tipoSangre && tipoSangre.trim()) pequeData.tipoSangre = tipoSangre.trim();
+        if (alergias && alergias.trim()) pequeData.alergias = alergias.trim();
+        if (servicios && Array.isArray(servicios)) pequeData.servicios = servicios;
+        
+        // Tutor 1
+        if (nombreTutor1 && nombreTutor1.trim()) pequeData.nombreTutor1 = nombreTutor1.trim();
+        if (celularTutor1 && celularTutor1.trim()) pequeData.celularTutor1 = celularTutor1.trim();
+        if (correoTutor1 && correoTutor1.trim()) pequeData.correoTutor1 = correoTutor1.trim();
+        
+        // Tutor 2
+        if (nombreTutor2 && nombreTutor2.trim()) pequeData.nombreTutor2 = nombreTutor2.trim();
+        if (celularTutor2 && celularTutor2.trim()) pequeData.celularTutor2 = celularTutor2.trim();
+        if (correoTutor2 && correoTutor2.trim()) pequeData.correoTutor2 = correoTutor2.trim();
+        
+        if (fechaPago) pequeData.fechaPago = parseInt(fechaPago);
 
         console.log('Datos para crear Peque:', pequeData);
 
@@ -257,7 +284,7 @@ app.post('/api/peques', async (req, res) => {
     }
 });
 
-// Actualizar
+// Actualizar peque - ACTUALIZADO para dos tutores
 app.put('/api/peques/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -269,9 +296,12 @@ app.put('/api/peques/:id', async (req, res) => {
             tipoSangre,
             alergias,
             servicios,
-            nombreTutor, 
-            celularTutor, 
-            correoTutor,
+            nombreTutor1, 
+            celularTutor1, 
+            correoTutor1,
+            nombreTutor2,
+            celularTutor2,
+            correoTutor2,
             fechaPago 
         } = req.body;
         
@@ -279,56 +309,76 @@ app.put('/api/peques/:id', async (req, res) => {
             return res.status(400).json({ error: 'ID no válido' });
         }
         
-        if (!nombreCompleto || !fechaNacimiento || !comportamiento || 
-            !servicios || !nombreTutor || !celularTutor || !correoTutor || !fechaPago) {
-            return res.status(400).json({ error: 'Faltan campos obligatorios' });
+        // VALIDACIÓN MÍNIMA - Solo nombre es obligatorio
+        if (!nombreCompleto || !nombreCompleto.trim()) {
+            return res.status(400).json({ error: 'El nombre completo es obligatorio' });
         }
 
-        if (!Array.isArray(servicios) || servicios.length === 0) {
-            return res.status(400).json({ error: 'Debe seleccionar al menos un servicio' });
+        // Validar servicios solo si se proporcionan
+        if (servicios && Array.isArray(servicios) && servicios.length > 0) {
+            const serviciosInvalidos = servicios.filter(servicio => !serviciosPermitidos.includes(servicio));
+            if (serviciosInvalidos.length > 0) {
+                return res.status(400).json({ 
+                    error: `Servicios no válidos: ${serviciosInvalidos.join(', ')}` 
+                });
+            }
         }
 
-        // Validar que todos los servicios están permitidos
-        const serviciosInvalidos = servicios.filter(servicio => !serviciosPermitidos.includes(servicio));
-        if (serviciosInvalidos.length > 0) {
-            return res.status(400).json({ 
-                error: `Servicios no válidos: ${serviciosInvalidos.join(', ')}` 
-            });
+        // Validaciones opcionales
+        if (celularTutor1 && !/^\d{10}$/.test(celularTutor1)) {
+            return res.status(400).json({ error: 'El celular del tutor 1 debe tener exactamente 10 dígitos' });
         }
 
-        if (!/^\d{10}$/.test(celularTutor)) {
-            return res.status(400).json({ error: 'El celular debe tener exactamente 10 dígitos' });
+        if (celularTutor2 && !/^\d{10}$/.test(celularTutor2)) {
+            return res.status(400).json({ error: 'El celular del tutor 2 debe tener exactamente 10 dígitos' });
         }
 
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoTutor)) {
-            return res.status(400).json({ error: 'El formato del correo electrónico no es válido' });
+        if (correoTutor1 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoTutor1)) {
+            return res.status(400).json({ error: 'El formato del correo electrónico del tutor 1 no es válido' });
         }
 
-        if (fechaPago < 1 || fechaPago > 31) {
+        if (correoTutor2 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correoTutor2)) {
+            return res.status(400).json({ error: 'El formato del correo electrónico del tutor 2 no es válido' });
+        }
+
+        if (fechaPago && (fechaPago < 1 || fechaPago > 31)) {
             return res.status(400).json({ error: 'La fecha de pago debe estar entre 1 y 31' });
         }
 
-        const fechaNac = new Date(fechaNacimiento);
-        const hoy = new Date();
-        if (fechaNac > hoy) {
-            return res.status(400).json({ error: 'La fecha de nacimiento no puede ser futura' });
+        if (fechaNacimiento) {
+            const fechaNac = new Date(fechaNacimiento);
+            const hoy = new Date();
+            if (fechaNac > hoy) {
+                return res.status(400).json({ error: 'La fecha de nacimiento no puede ser futura' });
+            }
         }
+
+        // Crear objeto de actualización con solo los campos que tienen valor
+        const updateData = {
+            nombreCompleto: nombreCompleto.trim()
+        };
+
+        // Solo agregar campos si tienen valor
+        if (fechaNacimiento) updateData.fechaNacimiento = new Date(fechaNacimiento);
+        if (comportamiento !== undefined) updateData.comportamiento = comportamiento;
+        if (caracteristicas !== undefined) updateData.caracteristicas = caracteristicas.trim();
+        if (tipoSangre !== undefined) updateData.tipoSangre = tipoSangre.trim();
+        if (alergias !== undefined) updateData.alergias = alergias.trim();
+        if (servicios !== undefined) updateData.servicios = servicios;
+        
+        // Tutores
+        if (nombreTutor1 !== undefined) updateData.nombreTutor1 = nombreTutor1.trim();
+        if (celularTutor1 !== undefined) updateData.celularTutor1 = celularTutor1.trim();
+        if (correoTutor1 !== undefined) updateData.correoTutor1 = correoTutor1.trim();
+        if (nombreTutor2 !== undefined) updateData.nombreTutor2 = nombreTutor2.trim();
+        if (celularTutor2 !== undefined) updateData.celularTutor2 = celularTutor2.trim();
+        if (correoTutor2 !== undefined) updateData.correoTutor2 = correoTutor2.trim();
+        
+        if (fechaPago !== undefined) updateData.fechaPago = fechaPago ? parseInt(fechaPago) : null;
 
         const updatedPeque = await Peque.findByIdAndUpdate(
             id,
-            {
-                nombreCompleto: nombreCompleto.trim(),
-                fechaNacimiento: new Date(fechaNacimiento),
-                comportamiento,
-                caracteristicas: caracteristicas?.trim() || '',
-                tipoSangre: tipoSangre?.trim() || '',
-                alergias: alergias?.trim() || '',
-                servicios,
-                nombreTutor: nombreTutor.trim(),
-                celularTutor: celularTutor.trim(),
-                correoTutor: correoTutor.trim(),
-                fechaPago: parseInt(fechaPago)
-            },
+            updateData,
             { new: true, runValidators: true }
         );
         
@@ -353,7 +403,7 @@ app.put('/api/peques/:id', async (req, res) => {
     }
 });
 
-// Ruta para obtener 
+// Ruta para obtener peques
 app.get('/api/peques', async (req, res) => {
     try {
         const peques = await Peque.find({ activo: true }).sort({ nombreCompleto: 1 });
@@ -363,6 +413,7 @@ app.get('/api/peques', async (req, res) => {
     }
 });
 
+// Eliminar peque
 app.delete('/api/peques/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -377,7 +428,7 @@ app.delete('/api/peques/:id', async (req, res) => {
   }
 });
 
-// Obtener
+// Obtener peque por ID
 app.get('/api/peques/:id', async (req, res) => {
     try {
         const { id } = req.params;
@@ -431,6 +482,7 @@ app.get('/api/maestros', async (req, res) => {
     }
 });
 
+// Eliminar maestro
 app.delete('/api/maestros/:id', async (req, res) => {
     const { id } = req.params;
     try {

@@ -91,9 +91,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="fechaNacimiento">Fecha de Nacimiento *</label>
-                        <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento" required>
-                        <div class="invalid-feedback">La fecha de nacimiento es obligatoria</div>
+                        <label class="form-label" for="fechaNacimiento">Fecha de Nacimiento</label>
+                        <input type="date" class="form-control" id="fechaNacimiento" name="fechaNacimiento">
+                        <div class="invalid-feedback">La fecha de nacimiento no es válida</div>
                     </div>
 
                     <div class="form-group">
@@ -102,8 +102,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="comportamiento">Diagnóstico *</label>
-                        <select class="form-control form-select" id="comportamiento" name="comportamiento" required>
+                        <label class="form-label" for="comportamiento">Diagnóstico</label>
+                        <select class="form-control form-select" id="comportamiento" name="comportamiento">
                             <option value="">Seleccionar diagnóstico</option>
                             <option value="neurotipico">Neurotípico</option>
                             <option value="neurodivergente">Neurodivergente</option>
@@ -112,8 +112,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="tipoSangre">Tipo de Sangre *</label>
-                        <select class="form-control form-select" id="tipoSangre" name="tipoSangre" required>
+                        <label class="form-label" for="tipoSangre">Tipo de Sangre</label>
+                        <select class="form-control form-select" id="tipoSangre" name="tipoSangre">
                             <option value="">Seleccionar tipo</option>
                             <option value="A+">A+</option>
                             <option value="A-">A-</option>
@@ -128,7 +128,7 @@
                     </div>
 
                     <div class="form-group" style="grid-column: 1 / -1;">
-                        <label class="form-label">Servicios *</label>
+                        <label class="form-label">Servicios</label>
                         <div class="servicios-container-edit">
                             <div class="checkbox-option-edit">
                                 <input type="checkbox" id="edit-natacion" name="servicios" value="Natación">
@@ -143,12 +143,12 @@
                                 <label for="edit-baby-spa">Baby Spa</label>
                             </div>
                             <div class="checkbox-option-edit">
-                                <input type="checkbox" id="edit-acuatica-inicial" name="servicios" value="Paquete de Acuática Inicial">
-                                <label for="edit-acuatica-inicial">Paquete de Acuática Inicial</label>
+                                <input type="checkbox" id="edit-paquete-completo" name="servicios" value="Paquete de Acuática Inicial y Estimulación temprana">
+                                <label for="edit-paquete-completo">Paquete de Acuática Inicial y Estimulación temprana</label>
                             </div>
                             <div class="checkbox-option-edit">
-                                <input type="checkbox" id="edit-estimulacion-temprana" name="servicios" value="Estimulación temprana">
-                                <label for="edit-estimulacion-temprana">Estimulación temprana</label>
+                                <input type="checkbox" id="edit-lenguaje" name="servicios" value="Lenguaje">
+                                <label for="edit-lenguaje">Lenguaje</label>
                             </div>
                         </div>
                         <div class="invalid-feedback">Selecciona al menos un servicio</div>
@@ -167,33 +167,58 @@
                     </div>
 
                     <h3 style="color: #495057; margin: 30px 0 20px 0; border-bottom: 2px solid #ffc107; padding-bottom: 10px;">
-                        👨‍👩‍👧‍👦 Información del Tutor
+                        👨‍👩‍👧‍👦 Información de Tutores
                     </h3>
 
+                    <!-- Tutor 1 -->
+                    <h4 style="color: #495057; margin: 20px 0 10px 0;">Tutor 1</h4>
                     <div class="form-group">
-                        <label class="form-label" for="nombreTutor">Nombre del Tutor *</label>
-                        <input type="text" class="form-control" id="nombreTutor" name="nombreTutor" required>
-                        <div class="invalid-feedback">El nombre del tutor es obligatorio</div>
+                        <label class="form-label" for="nombreTutor1">Nombre del Tutor 1</label>
+                        <input type="text" class="form-control" id="nombreTutor1" name="nombreTutor1">
+                        <div class="invalid-feedback">El nombre del tutor 1 es obligatorio</div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="celularTutor">Celular del Tutor *</label>
-                        <input type="tel" class="form-control" id="celularTutor" name="celularTutor" 
+                        <label class="form-label" for="celularTutor1">Celular del Tutor 1</label>
+                        <input type="tel" class="form-control" id="celularTutor1" name="celularTutor1" 
                                pattern="[0-9]{10}" maxlength="10" 
-                               placeholder="Ej: 9611234567" required>
+                               placeholder="Ej: 9611234567">
                         <div class="invalid-feedback">El celular debe tener exactamente 10 dígitos</div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="correoTutor">Correo del Tutor *</label>
-                        <input type="email" class="form-control" id="correoTutor" name="correoTutor" 
-                               placeholder="ejemplo@email.com" required>
-                        <div class="invalid-feedback">El correo electrónico es obligatorio y debe ser válido</div>
+                        <label class="form-label" for="correoTutor1">Correo del Tutor 1</label>
+                        <input type="email" class="form-control" id="correoTutor1" name="correoTutor1" 
+                               placeholder="ejemplo@email.com">
+                        <div class="invalid-feedback">El correo electrónico debe ser válido</div>
+                    </div>
+
+                    <!-- Tutor 2 -->
+                    <h4 style="color: #495057; margin: 20px 0 10px 0;">Tutor 2</h4>
+                    <div class="form-group">
+                        <label class="form-label" for="nombreTutor2">Nombre del Tutor 2</label>
+                        <input type="text" class="form-control" id="nombreTutor2" name="nombreTutor2">
+                        <div class="invalid-feedback">El nombre del tutor 2 es obligatorio</div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="fechaPago">Fecha de Pago *</label>
-                        <select class="form-control form-select" id="fechaPago" name="fechaPago" required>
+                        <label class="form-label" for="celularTutor2">Celular del Tutor 2</label>
+                        <input type="tel" class="form-control" id="celularTutor2" name="celularTutor2" 
+                               pattern="[0-9]{10}" maxlength="10" 
+                               placeholder="Ej: 9611234567">
+                        <div class="invalid-feedback">El celular debe tener exactamente 10 dígitos</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="correoTutor2">Correo del Tutor 2</label>
+                        <input type="email" class="form-control" id="correoTutor2" name="correoTutor2" 
+                               placeholder="ejemplo@email.com">
+                        <div class="invalid-feedback">El correo electrónico debe ser válido</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="fechaPago">Fecha de Pago</label>
+                        <select class="form-control form-select" id="fechaPago" name="fechaPago">
                             <option value="">Seleccionar día del mes</option>
                             <option value="1">Día 1</option>
                             <option value="2">Día 2</option>
@@ -283,7 +308,12 @@
 
             document.getElementById('editForm').addEventListener('submit', handleSubmit);
             
-            document.getElementById('celularTutor').addEventListener('input', function(e) {
+            // Event listeners para validar celulares
+            document.getElementById('celularTutor1').addEventListener('input', function(e) {
+                e.target.value = e.target.value.replace(/\D/g, '').substring(0, 10);
+            });
+
+            document.getElementById('celularTutor2').addEventListener('input', function(e) {
                 e.target.value = e.target.value.replace(/\D/g, '').substring(0, 10);
             });
 
@@ -292,6 +322,8 @@
                 if (fechaNacimiento) {
                     const edad = calcularEdad(fechaNacimiento);
                     document.getElementById('edad').value = edad;
+                } else {
+                    document.getElementById('edad').value = '';
                 }
             });
         });
@@ -340,17 +372,19 @@
                 checkboxes.forEach(checkbox => {
                     checkbox.checked = peque.servicios.includes(checkbox.value);
                 });
-            } else if (peque.servicio) {
-                // Compatibilidad con el campo antiguo
-                const checkbox = document.querySelector(`input[name="servicios"][value="${peque.servicio}"]`);
-                if (checkbox) checkbox.checked = true;
             }
             
             document.getElementById('caracteristicas').value = peque.caracteristicas || '';
             document.getElementById('alergias').value = peque.alergias || '';
-            document.getElementById('nombreTutor').value = peque.nombreTutor || '';
-            document.getElementById('celularTutor').value = peque.celularTutor || '';
-            document.getElementById('correoTutor').value = peque.correoTutor || '';
+            
+            // Llenar información de tutores
+            document.getElementById('nombreTutor1').value = peque.nombreTutor1 || peque.nombreTutor || '';
+            document.getElementById('celularTutor1').value = peque.celularTutor1 || peque.celularTutor || '';
+            document.getElementById('correoTutor1').value = peque.correoTutor1 || peque.correoTutor || '';
+            document.getElementById('nombreTutor2').value = peque.nombreTutor2 || '';
+            document.getElementById('celularTutor2').value = peque.celularTutor2 || '';
+            document.getElementById('correoTutor2').value = peque.correoTutor2 || '';
+            
             document.getElementById('fechaPago').value = peque.fechaPago || '';
 
             document.title = `Editar - ${peque.nombreCompleto}`;
@@ -377,18 +411,48 @@
                 });
 
                 const formData = {
-                    nombreCompleto: document.getElementById('nombreCompleto').value.trim(),
-                    fechaNacimiento: document.getElementById('fechaNacimiento').value,
-                    comportamiento: document.getElementById('comportamiento').value,
-                    tipoSangre: document.getElementById('tipoSangre').value.trim,
-                    servicios: serviciosSeleccionados, 
-                    caracteristicas: document.getElementById('caracteristicas').value.trim(),
-                    alergias: document.getElementById('alergias').value.trim(),
-                    nombreTutor: document.getElementById('nombreTutor').value.trim(),
-                    celularTutor: document.getElementById('celularTutor').value.trim(),
-                    correoTutor: document.getElementById('correoTutor').value.trim(),
-                    fechaPago: parseInt(document.getElementById('fechaPago').value)
+                    nombreCompleto: document.getElementById('nombreCompleto').value.trim()
                 };
+
+                // Solo agregar campos si tienen valor
+                const fechaNacimiento = document.getElementById('fechaNacimiento').value;
+                if (fechaNacimiento) formData.fechaNacimiento = fechaNacimiento;
+
+                const comportamiento = document.getElementById('comportamiento').value;
+                if (comportamiento) formData.comportamiento = comportamiento;
+
+                const tipoSangre = document.getElementById('tipoSangre').value.trim();
+                if (tipoSangre) formData.tipoSangre = tipoSangre;
+
+                formData.servicios = serviciosSeleccionados;
+
+                const caracteristicas = document.getElementById('caracteristicas').value.trim();
+                if (caracteristicas) formData.caracteristicas = caracteristicas;
+
+                const alergias = document.getElementById('alergias').value.trim();
+                if (alergias) formData.alergias = alergias;
+
+                // Tutores
+                const nombreTutor1 = document.getElementById('nombreTutor1').value.trim();
+                if (nombreTutor1) formData.nombreTutor1 = nombreTutor1;
+
+                const celularTutor1 = document.getElementById('celularTutor1').value.trim();
+                if (celularTutor1) formData.celularTutor1 = celularTutor1;
+
+                const correoTutor1 = document.getElementById('correoTutor1').value.trim();
+                if (correoTutor1) formData.correoTutor1 = correoTutor1;
+
+                const nombreTutor2 = document.getElementById('nombreTutor2').value.trim();
+                if (nombreTutor2) formData.nombreTutor2 = nombreTutor2;
+
+                const celularTutor2 = document.getElementById('celularTutor2').value.trim();
+                if (celularTutor2) formData.celularTutor2 = celularTutor2;
+
+                const correoTutor2 = document.getElementById('correoTutor2').value.trim();
+                if (correoTutor2) formData.correoTutor2 = correoTutor2;
+
+                const fechaPago = document.getElementById('fechaPago').value;
+                if (fechaPago) formData.fechaPago = parseInt(fechaPago);
 
                 const response = await fetch(`http://localhost:5000/api/peques/${pequeId}`, {
                     method: 'PUT',
@@ -422,42 +486,55 @@
 
         function validateForm() {
             let isValid = true;
-            const fields = ['nombreCompleto', 'fechaNacimiento', 'comportamiento', 'tipoSangre', 'nombreTutor', 'celularTutor', 'correoTutor', 'fechaPago'];
             
-            fields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                field.classList.remove('is-invalid');
-            });
+            // Solo validar nombre como obligatorio
+            const nombreCompleto = document.getElementById('nombreCompleto');
+            nombreCompleto.classList.remove('is-invalid');
 
-            fields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                if (!field.value.trim()) {
-                    field.classList.add('is-invalid');
+            if (!nombreCompleto.value.trim()) {
+                nombreCompleto.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            // Validaciones opcionales - solo si tienen valor
+            const celular1 = document.getElementById('celularTutor1');
+            celular1.classList.remove('is-invalid');
+            if (celular1.value && celular1.value.length !== 10) {
+                celular1.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            const celular2 = document.getElementById('celularTutor2');
+            celular2.classList.remove('is-invalid');
+            if (celular2.value && celular2.value.length !== 10) {
+                celular2.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            const correo1 = document.getElementById('correoTutor1');
+            correo1.classList.remove('is-invalid');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (correo1.value && !emailRegex.test(correo1.value)) {
+                correo1.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            const correo2 = document.getElementById('correoTutor2');
+            correo2.classList.remove('is-invalid');
+            if (correo2.value && !emailRegex.test(correo2.value)) {
+                correo2.classList.add('is-invalid');
+                isValid = false;
+            }
+
+            const fechaNacimiento = document.getElementById('fechaNacimiento');
+            fechaNacimiento.classList.remove('is-invalid');
+            if (fechaNacimiento.value) {
+                const fechaNac = new Date(fechaNacimiento.value);
+                const hoy = new Date();
+                if (fechaNac > hoy) {
+                    fechaNacimiento.classList.add('is-invalid');
                     isValid = false;
                 }
-            });
-
-            // Validar servicios
-            const serviciosSeleccionados = document.querySelectorAll('input[name="servicios"]:checked');
-            const serviciosContainer = document.querySelector('.servicios-container-edit');
-            if (serviciosSeleccionados.length === 0) {
-                serviciosContainer.classList.add('is-invalid');
-                isValid = false;
-            } else {
-                serviciosContainer.classList.remove('is-invalid');
-            }
-
-            const celular = document.getElementById('celularTutor');
-            if (celular.value && celular.value.length !== 10) {
-                celular.classList.add('is-invalid');
-                isValid = false;
-            }
-
-            const correo = document.getElementById('correoTutor');
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (correo.value && !emailRegex.test(correo.value)) {
-                correo.classList.add('is-invalid');
-                isValid = false;
             }
 
             return isValid;

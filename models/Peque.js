@@ -8,17 +8,16 @@ const pequeSchema = new mongoose.Schema({
     },
     fechaNacimiento: {
         type: Date,
-        required: true
+        required: false
     },
     edad: {
         type: String,
-        // NO requerido aquí porque se calcula automáticamente
         trim: true
     },
     comportamiento: {
         type: String,
-        required: true,
-        enum: ['neurotipico', 'neurodivergente']
+        required: false,
+        enum: ['neurotipico', 'neurodivergente', '']
     },
     caracteristicas: {
         type: String,
@@ -27,8 +26,8 @@ const pequeSchema = new mongoose.Schema({
     },
     tipoSangre: {
         type: String,
-        required: false, // CORREGIDO: cambiar de '' a false
-        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', ''] // Agregar cadena vacía como opción válida
+        required: false,
+        enum: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', '']
     },
     alergias: {
         type: String,
@@ -37,45 +36,76 @@ const pequeSchema = new mongoose.Schema({
     },
     servicios: {
         type: [String],
-        required: true,
+        required: false,
         validate: {
             validator: function(v) {
-                return v && v.length > 0;
+                return true;
             },
             message: 'Debe seleccionar al menos un servicio'
         },
-        enum: ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial y Estimulación temprana']
+        enum: ['Natación', 'Estimulación', 'Baby Spa', 'Paquete de Acuática Inicial y Estimulación temprana', 'Lenguaje']
     },
-    nombreTutor: {
+    nombreTutor1: {
         type: String,
-        required: true,
+        required: false,
         trim: true
     },
-    celularTutor: {
+    celularTutor1: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         validate: {
             validator: function(v) {
+                if (!v || v === '') return true;
                 return /^\d{10}$/.test(v);
             },
-            message: 'El número de celular debe tener 10 dígitos'
+            message: 'El número de celular del tutor 1 debe tener 10 dígitos'
         }
     },
-    correoTutor: {
+    correoTutor1: {
         type: String,
-        required: true,
+        required: false,
         trim: true,
         validate: {
             validator: function(v) {
+                if (!v || v === '') return true;
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
             },
-            message: 'El correo electrónico no es válido'
+            message: 'El correo electrónico del tutor 1 no es válido'
+        }
+    },
+    nombreTutor2: {
+        type: String,
+        required: false,
+        trim: true
+    },
+    celularTutor2: {
+        type: String,
+        required: false,
+        trim: true,
+        validate: {
+            validator: function(v) {
+                if (!v || v === '') return true;
+                return /^\d{10}$/.test(v);
+            },
+            message: 'El número de celular del tutor 2 debe tener 10 dígitos'
+        }
+    },
+    correoTutor2: {
+        type: String,
+        required: false,
+        trim: true,
+        validate: {
+            validator: function(v) {
+                if (!v || v === '') return true;
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+            },
+            message: 'El correo electrónico del tutor 2 no es válido'
         }
     },
     fechaPago: {
         type: Number,
-        required: true,
+        required: false,
         min: 1,
         max: 31
     },
@@ -87,7 +117,6 @@ const pequeSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Middleware para calcular la edad automáticamente ANTES de validar
 pequeSchema.pre('validate', function(next) {
     console.log('Middleware pre-validate ejecutándose...');
     console.log('fechaNacimiento:', this.fechaNacimiento);
@@ -102,7 +131,6 @@ pequeSchema.pre('validate', function(next) {
             edad--;
         }
         
-        // Si es menor de 1 año, calcular en meses
         if (edad === 0) {
             let meses = mes;
             if (hoy.getDate() < nacimiento.getDate()) {
@@ -117,11 +145,12 @@ pequeSchema.pre('validate', function(next) {
         }
         
         console.log('Edad calculada:', this.edad);
+    } else {
+        this.edad = '';
     }
     next();
 });
 
-// También mantener el middleware pre-save como respaldo
 pequeSchema.pre('save', function(next) {
     console.log('Middleware pre-save ejecutándose...');
     

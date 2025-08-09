@@ -68,8 +68,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="fechaNacimiento">Fecha de Nacimiento *</label>
-                    <input type="date" id="fechaNacimiento" name="fechaNacimiento" required>
+                    <label for="fechaNacimiento">Fecha de Nacimiento</label>
+                    <input type="date" id="fechaNacimiento" name="fechaNacimiento">
                 </div>
                 
                 <div class="form-group">
@@ -93,14 +93,14 @@
                 </div>
                 
                 <div class="form-group-full">
-                    <label>Diagnóstico *</label>
+                    <label>Diagnóstico</label>
                     <div class="behavioral-options">
                         <div class="radio-option">
-                            <input type="radio" id="neurotipico" name="comportamiento" value="neurotipico" required>
+                            <input type="radio" id="neurotipico" name="comportamiento" value="neurotipico">
                             <label for="neurotipico">Neurotípico</label>
                         </div>
                         <div class="radio-option">
-                            <input type="radio" id="neurodivergente" name="comportamiento" value="neurodivergente" required>
+                            <input type="radio" id="neurodivergente" name="comportamiento" value="neurodivergente">
                             <label for="neurodivergente">Neurodivergente</label>
                         </div>
                     </div>
@@ -117,7 +117,7 @@
                 </div>
                 
                 <div class="form-group-full">
-                    <label>Servicios *</label>
+                    <label>Servicios</label>
                     <div class="servicios-container">
                         <div class="checkbox-option">
                             <input type="checkbox" id="natacion" name="servicios" value="Natación">
@@ -135,29 +135,62 @@
                             <input type="checkbox" id="paquete-completo" name="servicios" value="Paquete de Acuática Inicial y Estimulación temprana">
                             <label for="paquete-completo">Paquete de Acuática Inicial y Estimulación temprana</label>
                         </div>
+                        <div class="checkbox-option">
+                            <input type="checkbox" id="lenguaje" name="servicios" value="Lenguaje">
+                            <label for="lenguaje">Lenguaje</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group-full tutores-section">
+                    <h3 style="color: #586BA6; margin-bottom: 20px; border-bottom: 2px solid #F24B99; padding-bottom: 10px;">
+                        Información de Tutores
+                    </h3>
+                    
+                    <h4 style="color: #085B69; margin: 20px 0 10px 0;">Tutor 1</h4>
+                    <div class="tutors-grid">
+                        <div class="form-group">
+                            <label for="nombreTutor1">Nombre del Tutor 1</label>
+                            <input type="text" id="nombreTutor1" name="nombreTutor1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="celularTutor1">Celular del Tutor 1</label>
+                            <input type="tel" id="celularTutor1" name="celularTutor1"
+                                    pattern="[0-9]{10}" placeholder="Ej: 9611234567" maxlength="10">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="correoTutor1">Correo del Tutor 1</label>
+                            <input type="email" id="correoTutor1" name="correoTutor1" 
+                                   placeholder="ejemplo@email.com">
+                        </div>
+                    </div>
+
+                    <h4 style="color: #085B69; margin: 20px 0 10px 0;">Tutor 2</h4>
+                    <div class="tutors-grid">
+                        <div class="form-group">
+                            <label for="nombreTutor2">Nombre del Tutor 2</label>
+                            <input type="text" id="nombreTutor2" name="nombreTutor2">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="celularTutor2">Celular del Tutor 2</label>
+                            <input type="tel" id="celularTutor2" name="celularTutor2"
+                                    pattern="[0-9]{10}" placeholder="Ej: 9611234567" maxlength="10">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="correoTutor2">Correo del Tutor 2</label>
+                            <input type="email" id="correoTutor2" name="correoTutor2" 
+                                   placeholder="ejemplo@email.com">
+                        </div>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="nombreTutor">Nombre del Tutor *</label>
-                    <input type="text" id="nombreTutor" name="nombreTutor" required>
-                </div>
-                
-                <div class="form-group">
-                    <label for="celularTutor">Celular del Tutor *</label>
-                    <input type="tel" id="celularTutor" name="celularTutor" required
-                            pattern="[0-9]{10}" placeholder="Ej: 9611234567" maxlength="10">
-                </div>
-
-                <div class="form-group">
-                    <label for="correoTutor">Correo del Tutor *</label>
-                    <input type="email" id="correoTutor" name="correoTutor" required 
-                           placeholder="ejemplo@email.com">
-                </div>
-                
-                <div class="form-group">
-                    <label for="fechaPago">Fecha de Pago *</label>
-                    <select id="fechaPago" name="fechaPago" required>
+                    <label for="fechaPago">Fecha de Pago</label>
+                    <select id="fechaPago" name="fechaPago">
                         <option value="">Seleccionar día del mes</option>
                         <option value="1">Día 1</option>
                         <option value="2">Día 2</option>

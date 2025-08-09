@@ -127,8 +127,9 @@
                     <td>${p.caracteristicas}</td>
                     <td>${formatDate(p.createdAt)}</td>
                     <td class="actions">
-                        <button onclick="venderProducto('${p._id}', '${p.nombre}')">💸 Vender</button>
-                        <button onclick="deleteProducto('${p._id}', '${p.nombre}')">🗑️ Eliminar</button>
+                        <button class="btn-warning btn-sm" onclick="editarProducto('${p._id}')">✏️ Editar</button>
+                        <button class="btn-sm" onclick="venderProducto('${p._id}', '${p.nombre}')">💸 Vender</button>
+                        <button class="btn-danger btn-sm" onclick="deleteProducto('${p._id}', '${p.nombre}')">🗑️ Eliminar</button>
                     </td>
                 </tr>
             `).join('');
@@ -143,35 +144,11 @@
             displayProductos(filtered);
         }
 
-        async function deleteProducto(id, nombre) {
-            if (!confirm(`¿Eliminar el producto "${nombre}"?`)) return;
-            try {
-                const res = await fetch(`http://localhost:5000/productos/${id}`, { method: 'DELETE' });
-                const data = await res.json();
-                if (res.ok) {
-                    alert(data.message);
-                    loadProductos();
-                } else {
-                    alert(data.error);
-                }
-            } catch (err) {
-                alert('Error al conectar con el servidor');
-            }
+        // Función para editar producto - NUEVA FUNCIÓN AGREGADA
+        function editarProducto(id) {
+            window.location.href = `editarProducto.html?id=${id}`;
         }
 
-        function refreshData() {
-            document.getElementById('searchInput').value = '';
-            loadProductos();
-        }
-
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-MX', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric'
-            });
-        }
         async function deleteProducto(id, nombre) {
             if (!confirm(`¿Eliminar el producto "${nombre}"?`)) return;
             try {
@@ -213,6 +190,20 @@
                 alert('Error al conectar con el servidor');
                 console.error(err);
             }
+        }
+
+        function refreshData() {
+            document.getElementById('searchInput').value = '';
+            loadProductos();
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-MX', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         }
     </script>
 </body>
