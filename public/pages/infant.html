@@ -168,33 +168,46 @@
             table.style.display = 'table';
             emptyState.style.display = 'none';
             
-            tbody.innerHTML = peques.map(peque => `
-                <tr>
-                    <td><strong>${peque.nombreCompleto}</strong></td>
-                    <td>${peque.edad}</td>
-                    <td>
-                        <span class="badge badge-${peque.comportamiento}">
-                            ${peque.comportamiento}
-                        </span>
-                    </td>
-                    <td>${peque.nombreTutor}</td>
-                    <td>${formatPhone(peque.celularTutor)}</td>
-                    <td>${formatPaymentDate(peque.fechaPago)}</td>
-                    <td>
-                        <div class="actions">
-                            <button class="btn btn-info btn-sm" onclick="viewPeque('${peque._id}')">
-                                Ver más
-                            </button>
-                            <button class="btn btn-warning btn-sm" onclick="editPeque('${peque._id}')">
-                                Editar
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deletePeque('${peque._id}', '${peque.nombreCompleto}')">
-                                Eliminar
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = peques.map(peque => {
+                let nombreTutor = '';
+                let celularTutor = '';
+                
+                if (peque.nombreTutor1 && peque.nombreTutor1.trim() !== '') {
+                    nombreTutor = peque.nombreTutor1;
+                    celularTutor = peque.celularTutor1 || '';
+                } else if (peque.nombreTutor2 && peque.nombreTutor2.trim() !== '') {
+                    nombreTutor = peque.nombreTutor2;
+                    celularTutor = peque.celularTutor2 || '';
+                }
+                
+                return `
+                    <tr>
+                        <td><strong>${peque.nombreCompleto}</strong></td>
+                        <td>${peque.edad || '-'}</td>
+                        <td>
+                            <span class="badge badge-${peque.comportamiento || 'neurotipico'}">
+                                ${peque.comportamiento ? peque.comportamiento.toUpperCase() : 'NEUROTÍPICO'}
+                            </span>
+                        </td>
+                        <td>${nombreTutor || '-'}</td>
+                        <td>${celularTutor ? formatPhone(celularTutor) : '-'}</td>
+                        <td>${formatPaymentDate(peque.fechaPago)}</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-info btn-sm" onclick="viewPeque('${peque._id}')">
+                                    Ver más
+                                </button>
+                                <button class="btn btn-warning btn-sm" onclick="editPeque('${peque._id}')">
+                                    Editar
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deletePeque('${peque._id}', '${peque.nombreCompleto}')">
+                                    Eliminar
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function updateStats(peques) {
@@ -216,12 +229,25 @@
                 return;
             }
             
-            const filtered = allPeques.filter(peque => 
-                peque.nombreCompleto.toLowerCase().includes(searchTerm) ||
-                peque.nombreTutor.toLowerCase().includes(searchTerm) ||
-                peque.comportamiento.toLowerCase().includes(searchTerm) ||
-                peque.celularTutor.includes(searchTerm)
-            );
+            const filtered = allPeques.filter(peque => {
+                const nombreMatch = peque.nombreCompleto.toLowerCase().includes(searchTerm);
+                
+                const comportamientoMatch = peque.comportamiento && 
+                    peque.comportamiento.toLowerCase().includes(searchTerm);
+                
+                const tutor1Match = peque.nombreTutor1 && 
+                    peque.nombreTutor1.toLowerCase().includes(searchTerm);
+                const tutor2Match = peque.nombreTutor2 && 
+                    peque.nombreTutor2.toLowerCase().includes(searchTerm);
+                
+                const celular1Match = peque.celularTutor1 && 
+                    peque.celularTutor1.includes(searchTerm);
+                const celular2Match = peque.celularTutor2 && 
+                    peque.celularTutor2.includes(searchTerm);
+                
+                return nombreMatch || comportamientoMatch || tutor1Match || 
+                    tutor2Match || celular1Match || celular2Match;
+            });
             
             displayPeques(filtered);
             updateStats(filtered);
