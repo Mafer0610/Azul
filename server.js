@@ -49,8 +49,8 @@ const eventoSchema = new mongoose.Schema({
     clase: { type: String, default: '' },
     maestro: { type: String, default: '' },
     caracteristicas: { type: String, default: '' },
-    nombreTutor: { type: String, default: '' },
-    celularTutor: { type: String, default: '' },
+    nombreTutor1: { type: String, default: '' },
+    celularTutor1: { type: String, default: '' },
     userId: { type: String, default: '' }
 });
 
@@ -262,12 +262,9 @@ app.post('/api/peques', async (req, res) => {
         if (alergias && alergias.trim()) pequeData.alergias = alergias.trim();
         if (servicios && Array.isArray(servicios)) pequeData.servicios = servicios;
         
-        // Tutor 1
         if (nombreTutor1 && nombreTutor1.trim()) pequeData.nombreTutor1 = nombreTutor1.trim();
         if (celularTutor1 && celularTutor1.trim()) pequeData.celularTutor1 = celularTutor1.trim();
         if (correoTutor1 && correoTutor1.trim()) pequeData.correoTutor1 = correoTutor1.trim();
-        
-        // Tutor 2
         if (nombreTutor2 && nombreTutor2.trim()) pequeData.nombreTutor2 = nombreTutor2.trim();
         if (celularTutor2 && celularTutor2.trim()) pequeData.celularTutor2 = celularTutor2.trim();
         if (correoTutor2 && correoTutor2.trim()) pequeData.correoTutor2 = correoTutor2.trim();
@@ -280,7 +277,7 @@ app.post('/api/peques', async (req, res) => {
         console.log('Peque creado (antes de save):', nuevoPeque);
 
         const savedPeque = await nuevoPeque.save();
-        console.log('✅ Peque guardado exitosamente:', savedPeque);
+        console.log('Peque guardado exitosamente:', savedPeque);
         
         res.status(201).json({ 
             message: 'Niño registrado exitosamente',
@@ -288,7 +285,7 @@ app.post('/api/peques', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ ERROR completo al guardar peque:', error);
+        console.error('ERROR completo al guardar peque:', error);
         console.error('Stack trace:', error.stack);
         
         if (error.name === 'ValidationError') {
@@ -717,8 +714,9 @@ async function actualizarGoogleSheets() {
         }
 
         const fechaInicio = new Date();
+        fechaInicio.setMonth(fechaInicio.getMonth() - 6);
         const fechaFin = new Date();
-        fechaFin.setDate(fechaInicio.getDate() + 30);
+        fechaFin.setMonth(fechaFin.getMonth() + 6);
         
         const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
         const fechaFinStr = fechaFin.toISOString().split('T')[0];
@@ -738,19 +736,38 @@ async function actualizarGoogleSheets() {
             return;
         }
 
-        const rows = [];
         const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
+                      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        
+        const coloresPorClase = {
+            'CEMS': { red: 0.7, green: 0.5, blue: 0.8 }, 
+            'AI': { red: 0.5, green: 0.7, blue: 0.9 }, 
+            'OCUPACIONAL': { red: 1, green: 0.9, blue: 0.5 },
+            'BABY SPA': { red: 0.9, green: 0.7, blue: 0.8 },
+            'CANCELAR': { red: 0.9, green: 0.6, blue: 0.6 }, 
+            'MUESTRA': { red: 0.7, green: 0.9, blue: 0.7 }, 
+            'REPOSICIÓN': { red: 0.8, green: 0.6, blue: 0.4 }
+        };
+
+        const eventosPorMes = {};
         
         for (const evento of eventos) {
             const fecha = new Date(evento.fecha + 'T00:00:00');
+            const claveMe = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
+            
+            if (!eventosPorMes[claveMe]) {
+                eventosPorMes[claveMe] = [];
+            }
+            
             const diaSemana = diasSemana[fecha.getDay()];
             
             let nombreNino = evento.nombreNino || '';
             let clase = evento.clase || '';
             let maestro = evento.maestro || '';
             let caracteristicas = evento.caracteristicas || '';
-            let tutor = evento.nombreTutor || '';
-            let celular = evento.celularTutor || '';
+            let tutor = evento.nombreTutor1 || '';
+            let celular = evento.celularTutor1 || '';
             
             if (!nombreNino && !clase && evento.title && evento.title.includes(' - ')) {
                 const partes = evento.title.split(' - ');
@@ -782,20 +799,121 @@ async function actualizarGoogleSheets() {
             const hora12 = horaNum > 12 ? horaNum - 12 : (horaNum === 0 ? 12 : horaNum);
             const horaFormateada = `${hora12}:${minutos} ${periodo}`;
 
-            rows.push({
-                'Fecha': fechaFormateada,
-                'Día': diaSemana,
-                'Hora': horaFormateada,
-                'Niño': nombreNino,
-                'Clase': clase,
-                'Maestro': maestro,
-                'Tutor': tutor,
-                'Celular': celular,
-                'Características': caracteristicas
+            eventosPorMes[claveMe].push({
+                fechaOriginal: fecha,
+                fechaFormateada: fechaFormateada,
+                diaSemana: diaSemana,
+                horaFormateada: horaFormateada,
+                nombreNino: nombreNino,
+                clase: clase,
+                maestro: maestro,
+                tutor: tutor,
+                celular: celular,
+                caracteristicas: caracteristicas
             });
         }
 
-        await sheet.addRows(rows);
+        const todasLasFilas = [];
+        const informacionDeColores = [];
+        
+        const clavesOrdenadas = Object.keys(eventosPorMes).sort();
+        
+        for (const claveMes of clavesOrdenadas) {
+            const [año, mesNum] = claveMes.split('-');
+            const nombreMes = meses[parseInt(mesNum) - 1];
+            
+            todasLasFilas.push({
+                'Fecha': '',
+                'Día': '',
+                'Hora': '',
+                'Niño': '',
+                'Clase': `═══ ${nombreMes} ${año} ═══`,
+                'Maestro': '',
+                'Tutor': '',
+                'Celular': '',
+                'Características': ''
+            });
+            
+            informacionDeColores.push({ 
+                tipo: 'separador',
+                fila: todasLasFilas.length
+            });
+            
+            eventosPorMes[claveMes].sort((a, b) => {
+                if (a.fechaOriginal.getTime() !== b.fechaOriginal.getTime()) {
+                    return a.fechaOriginal.getTime() - b.fechaOriginal.getTime();
+                }
+                return a.horaFormateada.localeCompare(b.horaFormateada);
+            });
+            
+            for (const evento of eventosPorMes[claveMes]) {
+                todasLasFilas.push({
+                    'Fecha': evento.fechaFormateada,
+                    'Día': evento.diaSemana,
+                    'Hora': evento.horaFormateada,
+                    'Niño': evento.nombreNino,
+                    'Clase': evento.clase,
+                    'Maestro': evento.maestro,
+                    'Tutor': evento.tutor,
+                    'Celular': evento.celular,
+                    'Características': evento.caracteristicas
+                });
+                
+                informacionDeColores.push({ 
+                    tipo: 'evento',
+                    fila: todasLasFilas.length,
+                    clase: evento.clase.toUpperCase()
+                });
+            }
+            
+            if (clavesOrdenadas.indexOf(claveMes) < clavesOrdenadas.length - 1) {
+                todasLasFilas.push({
+                    'Fecha': '',
+                    'Día': '',
+                    'Hora': '',
+                    'Niño': '',
+                    'Clase': '',
+                    'Maestro': '',
+                    'Tutor': '',
+                    'Celular': '',
+                    'Características': ''
+                });
+                
+                informacionDeColores.push({ 
+                    tipo: 'espacio',
+                    fila: todasLasFilas.length
+                });
+            }
+        }
+
+        await sheet.addRows(todasLasFilas);
+        
+        await sheet.loadCells('A1:I' + (todasLasFilas.length + 1));
+        
+        for (let i = 0; i < informacionDeColores.length; i++) {
+            const info = informacionDeColores[i];
+            const filaActual = info.fila + 1;
+            
+            if (info.tipo === 'separador') {
+                for (let col = 0; col < 9; col++) {
+                    const celda = sheet.getCell(filaActual - 1, col);
+                    celda.backgroundColor = { red: 0.9, green: 0.9, blue: 0.9 };
+                    if (col === 4) {
+                        celda.textFormat = { bold: true };
+                        celda.horizontalAlignment = 'CENTER';
+                    }
+                }
+            } else if (info.tipo === 'evento') {
+                const color = coloresPorClase[info.clase];
+                
+                if (color) {
+                    const celda = sheet.getCell(filaActual - 1, 4);
+                    celda.backgroundColor = color;
+                }
+            }
+        }
+        
+        await sheet.saveUpdatedCells();
         
         await sheet.updateProperties({
             gridProperties: {
@@ -803,8 +921,11 @@ async function actualizarGoogleSheets() {
             }
         });
 
-        console.log(`✅ Google Sheets actualizado con ${rows.length} eventos`);
-        console.log('📝 Datos enviados:', rows);
+        console.log(`✅ Google Sheets actualizado con ${eventos.length} eventos organizados por mes y año`);
+        console.log(`📅 Meses incluidos: ${clavesOrdenadas.map(clave => {
+            const [año, mesNum] = clave.split('-');
+            return `${meses[parseInt(mesNum) - 1]} ${año}`;
+        }).join(', ')}`);
         
     } catch (error) {
         console.error('❌ Error actualizando Google Sheets:', error.message);
