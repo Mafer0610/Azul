@@ -97,6 +97,7 @@ class AgendaSemanalmMongoDB {
                 option.value = nino.nombreCompleto;
                 datalist.appendChild(option);
             });
+            
             document.getElementById('nombreNino').addEventListener('input', (e) => {
                 const nombre = e.target.value.trim();
                 const nombreInput = e.target.value.trim().toLowerCase();
@@ -109,8 +110,8 @@ class AgendaSemanalmMongoDB {
 
                 if (encontrado) {
                     document.getElementById('caracteristicasNino').value = encontrado.caracteristicas || '';
-                    document.getElementById('nombreTutor').value = encontrado.nombreTutor || '';
-                    document.getElementById('celularTutor').value = encontrado.celularTutor || '';
+                    document.getElementById('nombreTutor').value = encontrado.nombreTutor1 || '';
+                    document.getElementById('celularTutor').value = encontrado.celularTutor1 || '';
                     console.log('Infante encontrado:', encontrado);
                 } else {
                     document.getElementById('caracteristicasNino').value = '';
@@ -287,10 +288,14 @@ class AgendaSemanalmMongoDB {
         if (evento.caracteristicas) {
             document.getElementById('caracteristicasNino').value = evento.caracteristicas;
         }
-        if (evento.nombreTutor) {
+        if (evento.nombreTutor1) {
+            document.getElementById('nombreTutor').value = evento.nombreTutor1;
+        } else if (evento.nombreTutor) {
             document.getElementById('nombreTutor').value = evento.nombreTutor;
         }
-        if (evento.celularTutor) {
+        if (evento.celularTutor1) {
+            document.getElementById('celularTutor').value = evento.celularTutor1;
+        } else if (evento.celularTutor) {
             document.getElementById('celularTutor').value = evento.celularTutor;
         }
         
@@ -388,8 +393,10 @@ class AgendaSemanalmMongoDB {
                 clase,
                 maestro,
                 caracteristicas,
-                nombreTutor,
-                celularTutor,
+                nombreTutor1: nombreTutor,
+                celularTutor1: celularTutor,
+                nombreTutor: nombreTutor,
+                celularTutor: celularTutor,
                 userId: this.USER_ID
             };
 
