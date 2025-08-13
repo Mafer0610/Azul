@@ -111,13 +111,37 @@ class AgendaVisualizacion {
 
         eventos.sort((a, b) => a.time.localeCompare(b.time));
 
-        return eventos.map((evento) => `
-            <div class="event-item">
-                <div class="event-time">${this.formatearHora(evento.time)}</div>
-                <div class="event-title">${evento.title}</div>
-                ${evento.description ? `<div class="event-description">${evento.description}</div>` : ''}
-            </div>
-        `).join('');
+        return eventos.map((evento) => {
+            let clase = '';
+            if (evento.title && evento.title.includes(' - ')) {
+                clase = evento.title.split(' - ')[1];
+            } else if (evento.clase) {
+                clase = evento.clase;
+            }
+            
+            const colorBorde = this.getColorPorClase(clase);
+            
+            return `
+                <div class="event-item" style="border-left-color: ${colorBorde};">
+                    <div class="event-time">${this.formatearHora(evento.time)}</div>
+                    <div class="event-title">${evento.title}</div>
+                    ${evento.description ? `<div class="event-description">${evento.description}</div>` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    getColorPorClase(clase) {
+        const colores = {
+            'CEMS': '#C4C7F2',
+            'AI': '#05F2DB',
+            'OCUPACIONAL': '#F2E205',
+            'BABY SPA': '#F4CCCC',
+            'CANCELAR': '#FF0000',
+            'MUESTRA': '#C6E0B4',
+            'REPOSICIÓN': '#FF00FF'
+        };
+        return colores[clase] || '#F24B99';
     }
 
     formatearHora(hora) {
