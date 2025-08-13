@@ -110,13 +110,13 @@ class AgendaSemanalmMongoDB {
 
                 if (encontrado) {
                     document.getElementById('caracteristicasNino').value = encontrado.caracteristicas || '';
-                    document.getElementById('nombreTutor').value = encontrado.nombreTutor1 || '';
-                    document.getElementById('celularTutor').value = encontrado.celularTutor1 || '';
+                    document.getElementById('nombreTutor1').value = encontrado.nombreTutor1 || ''; // CORREGIDO
+                    document.getElementById('celularTutor1').value = encontrado.celularTutor1 || ''; // CORREGIDO
                     console.log('Infante encontrado:', encontrado);
                 } else {
                     document.getElementById('caracteristicasNino').value = '';
-                    document.getElementById('nombreTutor').value = '';
-                    document.getElementById('celularTutor').value = '';
+                    document.getElementById('nombreTutor1').value = ''; // CORREGIDO
+                    document.getElementById('celularTutor1').value = ''; // CORREGIDO
                     console.warn('Infante no encontrado:', nombre);
                 }
             });
@@ -270,42 +270,101 @@ class AgendaSemanalmMongoDB {
             return;
         }
 
+        try {
+            const response = await fetch(`${this.API_BASE_URL}/eventos/${eventoId}`);
+            const eventoCompleto = response.ok ? await response.json() : evento;
+            
+            this.fechaSeleccionada = claveEvento;
+            this.eventoEditando = eventoId;
+            
+            document.getElementById('modalTitle').textContent = `Editar Evento`;
+            
+            document.getElementById('eventTime').value = eventoCompleto.time || '';
+            
+            if (eventoCompleto.nombreNino) {
+                document.getElementById('nombreNino').value = eventoCompleto.nombreNino;
+            } else if (eventoCompleto.title && eventoCompleto.title.includes(' - ')) {
+                const partes = eventoCompleto.title.split(' - ');
+                document.getElementById('nombreNino').value = partes[0] || '';
+            } else {
+                document.getElementById('nombreNino').value = eventoCompleto.title || '';
+            }
+            
+            if (eventoCompleto.clase) {
+                document.getElementById('clase').value = eventoCompleto.clase;
+            } else if (eventoCompleto.title && eventoCompleto.title.includes(' - ')) {
+                const partes = eventoCompleto.title.split(' - ');
+                document.getElementById('clase').value = partes[1] || '';
+            }
+            
+            document.getElementById('maestro').value = eventoCompleto.maestro || '';
+            
+            document.getElementById('caracteristicasNino').value = eventoCompleto.caracteristicas || '';
+            
+            let nombreTutor = '';
+            let celularTutor = '';
+            
+            if (eventoCompleto.nombreTutor1) {
+                nombreTutor = eventoCompleto.nombreTutor1;
+            } else if (eventoCompleto.nombreTutor) {
+                nombreTutor = eventoCompleto.nombreTutor;
+            } else if (eventoCompleto.description) {
+                const lineas = eventoCompleto.description.split('\n');
+                const lineaTutor = lineas.find(linea => linea.startsWith('Tutor:'));
+                if (lineaTutor) {
+                    nombreTutor = lineaTutor.replace('Tutor:', '').trim();
+                }
+            }
+            
+            if (eventoCompleto.celularTutor1) {
+                celularTutor = eventoCompleto.celularTutor1;
+            } else if (eventoCompleto.celularTutor) {
+                celularTutor = eventoCompleto.celularTutor;
+            } else if (eventoCompleto.description) {
+                const lineas = eventoCompleto.description.split('\n');
+                const lineaTel = lineas.find(linea => linea.startsWith('Tel:'));
+                if (lineaTel) {
+                    celularTutor = lineaTel.replace('Tel:', '').trim();
+                }
+            }
+            
+            document.getElementById('nombreTutor1').value = nombreTutor;
+            document.getElementById('celularTutor1').value = celularTutor;
+            
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('eventModal').style.display = 'block';
+            
+            console.log('Evento cargado para edición:', {
+                eventoCompleto,
+                nombreTutor,
+                celularTutor
+            });
+            
+        } catch (error) {
+            console.error('Error obteniendo evento completo:', error);
+            this.editarEventoBasico(evento, claveEvento);
+        }
+    }
+
+    editarEventoBasico(evento, claveEvento) {
         this.fechaSeleccionada = claveEvento;
-        this.eventoEditando = eventoId;
+        this.eventoEditando = evento._id;
         
         document.getElementById('modalTitle').textContent = `Editar Evento`;
-        document.getElementById('eventTime').value = evento.time;
+        document.getElementById('eventTime').value = evento.time || '';
         
-        if (evento.nombreNino) {
-            document.getElementById('nombreNino').value = evento.nombreNino;
-        }
-        if (evento.clase) {
-            document.getElementById('clase').value = evento.clase;
-        }
-        if (evento.maestro) {
-            document.getElementById('maestro').value = evento.maestro;
-        }
-        if (evento.caracteristicas) {
-            document.getElementById('caracteristicasNino').value = evento.caracteristicas;
-        }
-        if (evento.nombreTutor1) {
-            document.getElementById('nombreTutor').value = evento.nombreTutor1;
-        } else if (evento.nombreTutor) {
-            document.getElementById('nombreTutor').value = evento.nombreTutor;
-        }
-        if (evento.celularTutor1) {
-            document.getElementById('celularTutor').value = evento.celularTutor1;
-        } else if (evento.celularTutor) {
-            document.getElementById('celularTutor').value = evento.celularTutor;
-        }
-        
-        if (!evento.nombreNino && evento.title) {
+        if (evento.title && evento.title.includes(' - ')) {
             const partes = evento.title.split(' - ');
-            if (partes.length >= 2) {
-                document.getElementById('nombreNino').value = partes[0];
-                document.getElementById('clase').value = partes[1];
-            }
+            document.getElementById('nombreNino').value = partes[0] || '';
+            document.getElementById('clase').value = partes[1] || '';
+        } else {
+            document.getElementById('nombreNino').value = evento.title || '';
         }
+        
+        document.getElementById('maestro').value = '';
+        document.getElementById('caracteristicasNino').value = '';
+        document.getElementById('nombreTutor1').value = '';
+        document.getElementById('celularTutor1').value = '';
         
         document.getElementById('errorMessage').style.display = 'none';
         document.getElementById('eventModal').style.display = 'block';
@@ -371,8 +430,8 @@ class AgendaSemanalmMongoDB {
         const clase = document.getElementById('clase').value;
         const maestro = document.getElementById('maestro').value;
         const caracteristicas = document.getElementById('caracteristicasNino').value.trim();
-        const nombreTutor = document.getElementById('nombreTutor').value.trim();
-        const celularTutor = document.getElementById('celularTutor').value.trim();
+        const nombreTutor = document.getElementById('nombreTutor1').value.trim();
+        const celularTutor = document.getElementById('celularTutor1').value.trim();
         const saveBtn = document.getElementById('saveBtn');
 
         if (!time || !nombreNino || !clase || !maestro) {

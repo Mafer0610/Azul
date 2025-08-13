@@ -119,12 +119,51 @@ app.post('/api/eventos', async (req, res) => {
 app.put('/api/eventos/:id', async (req, res) => {
     try {
         const { id } = req.params;
-        const { fecha, time, title, description } = req.body;
+        const { 
+            fecha, 
+            time, 
+            title, 
+            description, 
+            nombreNino, 
+            clase, 
+            maestro, 
+            caracteristicas, 
+            nombreTutor1, 
+            celularTutor1, 
+            nombreTutor, 
+            celularTutor, 
+            userId 
+        } = req.body;
+        
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ error: 'ID no válido' });
+        }
+        
+        const updateData = {
+            fecha,
+            time,
+            title,
+            description
+        };
+        
+        if (nombreNino !== undefined) updateData.nombreNino = nombreNino;
+        if (clase !== undefined) updateData.clase = clase;
+        if (maestro !== undefined) updateData.maestro = maestro;
+        if (caracteristicas !== undefined) updateData.caracteristicas = caracteristicas;
+        if (nombreTutor1 !== undefined) updateData.nombreTutor1 = nombreTutor1;
+        if (celularTutor1 !== undefined) updateData.celularTutor1 = celularTutor1;
+        if (nombreTutor !== undefined) updateData.nombreTutor = nombreTutor;
+        if (celularTutor !== undefined) updateData.celularTutor = celularTutor;
+        if (userId !== undefined) updateData.userId = userId;
+        
+        console.log('Actualizando evento con datos:', updateData);
+        
         const eventoActualizado = await Evento.findByIdAndUpdate(
             id,
-            { fecha, time, title, description },
+            updateData,
             { new: true, runValidators: true }
         );
+        
         if (!eventoActualizado) {
             return res.status(404).json({ error: 'Evento no encontrado' });
         }
@@ -135,6 +174,7 @@ app.put('/api/eventos/:id', async (req, res) => {
         
         res.json(eventoActualizado);
     } catch (error) {
+        console.error('Error actualizando evento:', error);
         res.status(500).json({ error: error.message });
     }
 });
@@ -944,12 +984,27 @@ app.post('/api/sync-sheets', async (req, res) => {
     }
 });
 
-console.log('🔄 Iniciando sincronización inicial con Google Sheets...');
-setTimeout(() => {
-    actualizarGoogleSheets().catch(err => 
-        console.error('Error en sincronización inicial:', err.message)
-    );
-}, 5000);
+// Obtener evento específico por ID
+app.get('/api/eventos/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ error: 'ID no válido' });
+        }
+        
+        const evento = await Evento.findById(id);
+        
+        if (!evento) {
+            return res.status(404).json({ error: 'Evento no encontrado' });
+        }
+        
+        res.json(evento);
+    } catch (error) {
+        console.error('Error obteniendo evento:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
 
 // Ruta de debug para ver qué datos se están enviando
 app.get('/api/debug-eventos', async (req, res) => {
