@@ -11,6 +11,7 @@ class AgendaMensualMongoDB {
         this.añoActual = new Date().getFullYear();
         this.API_BASE_URL = window.location.origin + '/api';
         this.USER_ID = 'user_' + Date.now();
+        this.maestrosOcupados = {};
         
         this.inicializar();
     }
@@ -63,6 +64,7 @@ class AgendaMensualMongoDB {
             
             if (response.ok) {
                 this.eventos = await response.json();
+                await this.actualizarMaestrosOcupados();
             } else {
                 console.error('Error cargando eventos:', response.statusText);
                 this.eventos = {};
@@ -70,6 +72,74 @@ class AgendaMensualMongoDB {
         } catch (error) {
             console.error('Error cargando eventos:', error);
             this.eventos = {};
+        }
+    }
+
+    async actualizarMaestrosOcupados() {
+        this.maestrosOcupados = {};
+        
+        try {
+            // Obtener eventos completos para tener la información del maestro
+            const response = await fetch(`${this.API_BASE_URL}/eventos/completos`);
+            if (!response.ok) {
+                // Si no existe la ruta, usar los eventos ya cargados
+                this.procesarMaestrosOcupados();
+                return;
+            }
+            
+            const eventosCompletos = await response.json();
+            
+            for (const [fecha, eventos] of Object.entries(eventosCompletos)) {
+                if (!this.maestrosOcupados[fecha]) {
+                    this.maestrosOcupados[fecha] = {};
+                }
+                
+                eventos.forEach(evento => {
+                    if (evento.maestro && evento.time) {
+                        if (!this.maestrosOcupados[fecha][evento.time]) {
+                            this.maestrosOcupados[fecha][evento.time] = [];
+                        }
+                        if (!this.maestrosOcupados[fecha][evento.time].includes(evento.maestro)) {
+                            this.maestrosOcupados[fecha][evento.time].push(evento.maestro);
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error actualizando maestros ocupados:', error);
+            this.procesarMaestrosOcupados();
+        }
+    }
+
+    procesarMaestrosOcupados() {
+        // Método alternativo usando los eventos ya cargados
+        this.maestrosOcupados = {};
+        
+        for (const [fecha, eventos] of Object.entries(this.eventos)) {
+            if (!this.maestrosOcupados[fecha]) {
+                this.maestrosOcupados[fecha] = {};
+            }
+            
+            eventos.forEach(evento => {
+                // Intentar extraer maestro del título o descripción
+                let maestro = '';
+                if (evento.description) {
+                    const lineas = evento.description.split('\n');
+                    const lineaMaestro = lineas.find(linea => linea.startsWith('Maestro:'));
+                    if (lineaMaestro) {
+                        maestro = lineaMaestro.replace('Maestro:', '').trim();
+                    }
+                }
+                
+                if (maestro && evento.time) {
+                    if (!this.maestrosOcupados[fecha][evento.time]) {
+                        this.maestrosOcupados[fecha][evento.time] = [];
+                    }
+                    if (!this.maestrosOcupados[fecha][evento.time].includes(maestro)) {
+                        this.maestrosOcupados[fecha][evento.time].push(maestro);
+                    }
+                }
+            });
         }
     }
 
@@ -127,8 +197,71 @@ class AgendaMensualMongoDB {
                 option.textContent = m.nombreCompleto;
                 selector.appendChild(option);
             });
+
+            // Agregar eventos para validación en tiempo real
+            this.configurarValidacionMaestros();
         } catch (error) {
             console.error('Error cargando maestros:', error);
+        }
+    }
+
+    configurarValidacionMaestros() {
+        const timeInput = document.getElementById('eventTime');
+        const maestroSelect = document.getElementById('maestro');
+        
+        const validarMaestro = () => {
+            if (!this.fechaSeleccionada || !timeInput.value) return;
+            
+            this.actualizarOpcionesMaestros();
+        };
+
+        timeInput.addEventListener('change', validarMaestro);
+        timeInput.addEventListener('input', validarMaestro);
+    }
+
+    actualizarOpcionesMaestros() {
+        const selector = document.getElementById('maestro');
+        const timeInput = document.getElementById('eventTime');
+        const selectedValue = selector.value;
+        
+        if (!this.fechaSeleccionada || !timeInput.value) {
+            // Restaurar todas las opciones
+            selector.innerHTML = '<option value="">-- Seleccionar --</option>';
+            this.maestros.forEach(m => {
+                const option = document.createElement('option');
+                option.value = m.nombreCompleto;
+                option.textContent = m.nombreCompleto;
+                selector.appendChild(option);
+            });
+            return;
+        }
+
+        const maestrosOcupadosEnHora = this.maestrosOcupados[this.fechaSeleccionada]?.[timeInput.value] || [];
+        
+        selector.innerHTML = '<option value="">-- Seleccionar --</option>';
+        
+        this.maestros.forEach(m => {
+            const option = document.createElement('option');
+            option.value = m.nombreCompleto;
+            
+            const estaOcupado = maestrosOcupadosEnHora.includes(m.nombreCompleto);
+            const esEventoActual = this.eventoEditando && selectedValue === m.nombreCompleto;
+            
+            if (estaOcupado && !esEventoActual) {
+                option.textContent = `${m.nombreCompleto} (Ocupado)`;
+                option.disabled = true;
+                option.style.color = '#999';
+                option.style.fontStyle = 'italic';
+            } else {
+                option.textContent = m.nombreCompleto;
+            }
+            
+            selector.appendChild(option);
+        });
+        
+        // Restaurar selección si era válida
+        if (selectedValue && !maestrosOcupadosEnHora.includes(selectedValue)) {
+            selector.value = selectedValue;
         }
     }
 
@@ -246,6 +379,8 @@ class AgendaMensualMongoDB {
         document.getElementById('deleteBtn').style.display = 'none';
         
         document.getElementById('eventModal').style.display = 'block';
+        
+        this.actualizarOpcionesMaestros();
     }
 
     async verDetalleEvento(eventoId) {
@@ -305,6 +440,7 @@ class AgendaMensualMongoDB {
                 document.getElementById('clase').value = partes[1] || '';
             }
             
+            this.actualizarOpcionesMaestros();
             document.getElementById('maestro').value = eventoCompleto.maestro || '';
             
             document.getElementById('caracteristicasNino').value = eventoCompleto.caracteristicas || '';
@@ -374,6 +510,7 @@ class AgendaMensualMongoDB {
             document.getElementById('nombreNino').value = evento.title || '';
         }
         
+        this.actualizarOpcionesMaestros();
         document.getElementById('maestro').value = '';
         document.getElementById('caracteristicasNino').value = '';
         document.getElementById('nombreTutor1').value = '';
@@ -444,6 +581,30 @@ class AgendaMensualMongoDB {
         errorElement.style.display = 'block';
     }
 
+    async validarDisponibilidadMaestro(maestro, fecha, hora, eventoId = null) {
+        try {
+            const response = await fetch(`${this.API_BASE_URL}/maestros/disponibilidad`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    maestro,
+                    fecha,
+                    hora,
+                    eventoId
+                })
+            });
+
+            const result = await response.json();
+            return result.disponible;
+        } catch (error) {
+            console.error('Error validando disponibilidad:', error);
+            const maestrosOcupadosEnHora = this.maestrosOcupados[fecha]?.[hora] || [];
+            return !maestrosOcupadosEnHora.includes(maestro);
+        }
+    }
+
     async guardarEvento() {
         const time = document.getElementById('eventTime').value;
         const nombreNino = document.getElementById('nombreNino').value.trim();
@@ -456,6 +617,19 @@ class AgendaMensualMongoDB {
 
         if (!time || !nombreNino || !clase || !maestro) {
             this.mostrarError('Por favor completa todos los campos requeridos');
+            return;
+        }
+
+        // Validar disponibilidad del maestro
+        const disponible = await this.validarDisponibilidadMaestro(
+            maestro, 
+            this.fechaSeleccionada, 
+            time, 
+            this.eventoEditando
+        );
+
+        if (!disponible) {
+            this.mostrarError(`El maestro ${maestro} ya está ocupado en esta hora. Por favor selecciona otro maestro o cambia la hora.`);
             return;
         }
 
@@ -472,8 +646,10 @@ class AgendaMensualMongoDB {
                 clase,
                 maestro,
                 caracteristicas,
-                nombreTutor,
-                celularTutor,
+                nombreTutor1: nombreTutor,
+                celularTutor1: celularTutor,
+                nombreTutor: nombreTutor,
+                celularTutor: celularTutor,
                 userId: this.USER_ID
             };
 

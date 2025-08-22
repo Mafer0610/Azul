@@ -9,7 +9,7 @@ class AgendaSemanalmMongoDB {
         this.semanaActual = 0;
         this.API_BASE_URL = window.location.origin + '/api';
         this.USER_ID = 'user_' + Date.now(); 
-        this.maestrosOcupados = {}; // Cache para maestros ocupados
+        this.maestrosOcupados = {};
         
         this.inicializar();
     }
@@ -89,10 +89,8 @@ class AgendaSemanalmMongoDB {
         this.maestrosOcupados = {};
         
         try {
-            // Obtener eventos completos para tener la información del maestro
             const response = await fetch(`${this.API_BASE_URL}/eventos/completos`);
             if (!response.ok) {
-                // Si no existe la ruta, usar los eventos ya cargados
                 this.procesarMaestrosOcupados();
                 return;
             }

@@ -1029,6 +1029,111 @@ app.get('/api/debug-eventos', async (req, res) => {
     }
 });
 
+// Ruta para obtener eventos completos (con información del maestro)
+app.get('/api/eventos/completos', async (req, res) => {
+    try {
+        const { fechaInicio, fechaFin } = req.query;
+        let query = {};
+        
+        if (fechaInicio && fechaFin) {
+            query.fecha = {
+                $gte: fechaInicio,
+                $lte: fechaFin
+            };
+        }
+        
+        const eventos = await Evento.find(query).sort({ fecha: 1, time: 1 });
+        
+        const eventosAgrupados = {};
+        eventos.forEach(evento => {
+            if (!eventosAgrupados[evento.fecha]) {
+                eventosAgrupados[evento.fecha] = [];
+            }
+            eventosAgrupados[evento.fecha].push({
+                _id: evento._id,
+                time: evento.time,
+                title: evento.title,
+                description: evento.description,
+                maestro: evento.maestro,
+                nombreNino: evento.nombreNino,
+                clase: evento.clase
+            });
+        });
+        
+        res.json(eventosAgrupados);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Ruta para validar disponibilidad del maestro
+app.post('/api/maestros/disponibilidad', async (req, res) => {
+    try {
+        const { maestro, fecha, hora, eventoId } = req.body;
+        
+        if (!maestro || !fecha || !hora) {
+            return res.status(400).json({ error: 'Faltan parámetros requeridos' });
+        }
+        
+        // Buscar eventos en la misma fecha y hora con el mismo maestro
+        let query = {
+            fecha: fecha,
+            time: hora,
+            maestro: maestro
+        };
+        
+        // Si estamos editando un evento, excluirlo de la búsqueda
+        if (eventoId) {
+            query._id = { $ne: eventoId };
+        }
+        
+        const eventosConflicto = await Evento.find(query);
+        
+        const disponible = eventosConflicto.length === 0;
+        
+        res.json({
+            disponible,
+            conflictos: eventosConflicto.length,
+            eventos: eventosConflicto.map(e => ({
+                id: e._id,
+                title: e.title,
+                time: e.time,
+                maestro: e.maestro
+            }))
+        });
+        
+    } catch (error) {
+        console.error('Error validando disponibilidad:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
+// Ruta para obtener maestros ocupados en una fecha específica
+app.get('/api/maestros/ocupados/:fecha', async (req, res) => {
+    try {
+        const { fecha } = req.params;
+        
+        const eventos = await Evento.find({ fecha: fecha });
+        
+        const maestrosOcupados = {};
+        eventos.forEach(evento => {
+            if (evento.maestro && evento.time) {
+                if (!maestrosOcupados[evento.time]) {
+                    maestrosOcupados[evento.time] = [];
+                }
+                if (!maestrosOcupados[evento.time].includes(evento.maestro)) {
+                    maestrosOcupados[evento.time].push(evento.maestro);
+                }
+            }
+        });
+        
+        res.json(maestrosOcupados);
+    } catch (error) {
+        console.error('Error obteniendo maestros ocupados:', error);
+        res.status(500).json({ error: 'Error del servidor' });
+    }
+});
+
 // Iniciar servidor
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
