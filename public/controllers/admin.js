@@ -21,6 +21,7 @@ class AgendaSemanalmMongoDB {
         await this.cargarMaestros();
         this.renderizarCalendario();
         this.configurarModal();
+        this.configurarCamposTutor();
         this.actualizarNavegacion();
     }
 
@@ -212,8 +213,7 @@ class AgendaSemanalmMongoDB {
                 option.textContent = m.nombreCompleto;
                 selector.appendChild(option);
             });
-
-            // Agregar eventos para validación en tiempo real
+            
             this.configurarValidacionMaestros();
         } catch (error) {
             console.error('Error cargando maestros:', error);
@@ -232,6 +232,30 @@ class AgendaSemanalmMongoDB {
 
         timeInput.addEventListener('change', validarMaestro);
         timeInput.addEventListener('input', validarMaestro);
+    }
+
+    configurarCamposTutor() {
+        const claseSelect = document.getElementById('clase');
+        const nombreTutorInput = document.getElementById('nombreTutor1');
+        const celularTutorInput = document.getElementById('celularTutor1');
+        
+        const actualizarCamposTutor = () => {
+            if (claseSelect.value === 'MUESTRA') {
+                nombreTutorInput.removeAttribute('readonly');
+                celularTutorInput.removeAttribute('readonly');
+                nombreTutorInput.style.backgroundColor = '#f8f9ff';
+                celularTutorInput.style.backgroundColor = '#f8f9ff';
+            } else {
+                nombreTutorInput.setAttribute('readonly', 'true');
+                celularTutorInput.setAttribute('readonly', 'true');
+                nombreTutorInput.style.backgroundColor = '#f5f5f5';
+                celularTutorInput.style.backgroundColor = '#f5f5f5';
+            }
+        };
+        
+        claseSelect.addEventListener('change', actualizarCamposTutor);
+        
+        actualizarCamposTutor();
     }
 
     actualizarOpcionesMaestros() {
@@ -390,6 +414,13 @@ class AgendaSemanalmMongoDB {
         document.getElementById('eventForm').reset();
         document.getElementById('errorMessage').style.display = 'none';
         document.getElementById('eventModal').style.display = 'block';
+        
+        const nombreTutorInput = document.getElementById('nombreTutor1');
+        const celularTutorInput = document.getElementById('celularTutor1');
+        nombreTutorInput.setAttribute('readonly', 'true');
+        celularTutorInput.setAttribute('readonly', 'true');
+        nombreTutorInput.style.backgroundColor = '#f5f5f5';
+        celularTutorInput.style.backgroundColor = '#f5f5f5';
         
         this.actualizarOpcionesMaestros();
     }
